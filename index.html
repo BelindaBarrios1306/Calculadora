@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculadora de Integrales y Aplicaciones</title>
+<!-- KaTeX para mostrar las fórmulas (si no hay internet, se muestran como texto) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Colores UMG (azul y dorado). Cámbialos aquí si necesitas ajustar el tono exacto. */
+  --navy:#06173a; --blue:#0a3d91; --blue2:#1556c9; --card:#0d2a63; --card2:#0a1f4d;
+  --gold:#ffc72c; --gold2:#e0a100; --ink:#eaf1ff; --muted:#9fb4e0; --line:rgba(255,199,44,.22);
+  --ok:#3ddc97; --bad:#ff6b6b;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --game:'Orbitron','Trebuchet MS',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;color:var(--ink);font:16px/1.5 'Nunito',system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  background:radial-gradient(1200px 600px at 80% -10%,#14449c55,transparent),
+  linear-gradient(rgba(255,199,44,.04) 1px,transparent 1px) 0 0/36px 36px,
+  linear-gradient(90deg,rgba(255,199,44,.04) 1px,transparent 1px) 0 0/36px 36px,var(--navy);min-height:100vh}
+.top{display:flex;gap:20px;align-items:center;flex-wrap:wrap;padding:18px 24px;background:linear-gradient(100deg,#0a3d91,#06255e 70%);border-bottom:4px solid var(--gold);box-shadow:0 6px 24px #0008}
+.logo{width:96px;height:96px;flex:none;border-radius:18px;border:3px dashed var(--gold);background:#ffffff14;display:grid;place-items:center;cursor:pointer;overflow:hidden;text-align:center;color:var(--gold);transition:.2s}
+.logo:hover{transform:scale(1.06) rotate(-2deg);background:#ffffff26}
+.logo img{width:100%;height:100%;object-fit:contain;background:#fff;padding:4px}
+.logo span{font-size:1.7rem;line-height:1.1}.logo small{display:block;font-size:.62rem;font-weight:800;margin-top:2px}
+.ttl{flex:1;min-width:240px}
+.ttl small{color:var(--gold);font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:.72rem}
+.ttl h1{margin:2px 0;font-family:var(--game);font-size:1.7rem;letter-spacing:.02em;text-shadow:0 3px 0 #0006,0 0 18px #ffc72c55}
+.ttl p{margin:0;color:var(--muted);font-size:.9rem}
+.hud{display:flex;flex-direction:column;gap:8px;min-width:250px}
+.lvlrow{display:flex;align-items:center;gap:10px}
+.lvl{width:54px;height:54px;border-radius:50%;background:radial-gradient(circle at 30% 25%,#ffe082,var(--gold2));color:var(--navy);display:grid;place-items:center;font-family:var(--game);font-weight:800;line-height:1;text-align:center;box-shadow:0 0 0 3px var(--navy),0 0 0 6px var(--gold),0 0 20px #ffc72c88}
+.lvl small{display:block;font-size:.5rem}.lvl b{font-size:1.25rem}
+.xpwrap{flex:1}
+.xpbar{height:16px;border-radius:99px;background:#020c24;border:2px solid var(--gold);overflow:hidden}
+.xpfill{height:100%;width:0;background:repeating-linear-gradient(45deg,var(--gold),var(--gold) 8px,#ffdd73 8px,#ffdd73 16px);transition:width .6s cubic-bezier(.2,.9,.3,1.2)}
+.xptxt{font-size:.72rem;color:var(--muted);display:flex;justify-content:space-between;margin-top:2px}
+.badges{display:flex;gap:6px;flex-wrap:wrap}
+.bd{min-width:42px;height:32px;padding:0 6px;display:grid;place-items:center;border-radius:10px;background:#020c24;border:2px solid #2a4a8f;color:var(--gold);font-family:var(--game);font-weight:800;font-size:.62rem;filter:grayscale(1) opacity(.45);transition:.3s}
+.bd.on{filter:none;border-color:var(--gold);box-shadow:0 0 12px #ffc72c99;animation:pop .6s}
+.sw{display:flex;align-items:center;gap:8px;font-size:.82rem;font-weight:800;color:var(--gold);cursor:pointer;user-select:none}
+.sw input{width:auto;accent-color:var(--gold);transform:scale(1.2)}
+.layout{display:grid;grid-template-columns:290px 1fr;gap:20px;padding:20px 24px 50px;max-width:1360px;margin:0 auto}
+nav{position:sticky;top:12px;align-self:start;background:linear-gradient(180deg,var(--card),var(--card2));border:2px solid var(--line);border-radius:18px;padding:10px;max-height:calc(100vh - 24px);overflow:auto;box-shadow:0 10px 30px #0007}
+nav h2{font-family:var(--game);font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);margin:14px 8px 6px}
+nav .prog{font-size:.75rem;color:var(--muted);margin:0 8px 6px}
+nav button{display:flex;align-items:center;gap:8px;width:100%;text-align:left;border:2px solid transparent;background:none;padding:8px 9px;border-radius:12px;font:inherit;font-size:.9rem;font-weight:700;color:var(--ink);cursor:pointer;transition:.15s}
+nav button .ic{font-size:1.15rem;width:1.5em;text-align:center}
+nav button b{color:var(--gold);min-width:2.4em;font-variant-numeric:tabular-nums;font-family:var(--game);font-size:.72rem}
+nav button .t{flex:1}
+nav button .st{width:11px;height:11px;border-radius:50%;background:#2a4a8f;transition:.3s;flex:none}
+nav button.done .st{background:var(--gold);box-shadow:0 0 10px var(--gold)}
+nav button.on .st{box-shadow:0 0 0 2px var(--navy)}
+nav button:hover{background:#ffffff14;transform:translateX(4px)}
+nav button.on{background:linear-gradient(90deg,var(--gold),#ffdd73);color:var(--navy);border-color:#fff3;box-shadow:0 4px 0 var(--gold2)}
+nav button.on b{color:var(--navy)}
+main{min-width:0}
+.card{background:linear-gradient(160deg,var(--card),var(--card2));border:2px solid var(--line);border-radius:20px;padding:22px 24px;margin-bottom:18px;box-shadow:0 10px 30px #0006;animation:rise .45s ease both}
+.card h2{margin:0 0 4px;font-family:var(--game);font-size:1.3rem}
+.sec{display:inline-block;background:var(--gold);color:var(--navy);font-family:var(--game);font-weight:800;font-size:.7rem;padding:3px 10px;border-radius:99px;margin-bottom:8px;letter-spacing:.06em}
+.desc{color:var(--muted);margin:4px 0 14px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+label{display:block;font-size:.78rem;font-weight:800;color:var(--gold);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
+input,select{width:100%;padding:10px 12px;border:2px solid #2a4a8f;border-radius:12px;font:inherit;font-family:var(--mono);font-size:1rem;background:var(--navy);color:#fff;transition:.15s}
+select{font-family:inherit;font-weight:700}
+input:focus,select:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 4px #ffc72c33}
+input[type=range]{padding:0;height:26px;accent-color:var(--gold);background:none;border:0;margin-top:6px;box-shadow:none;cursor:ew-resize}
+.actions{display:flex;gap:12px;margin-top:18px;flex-wrap:wrap}
+.btn{border:0;border-radius:14px;padding:12px 22px;font:inherit;font-weight:800;cursor:pointer;transition:.1s}
+.btn.p{background:linear-gradient(180deg,#ffdd73,var(--gold));color:var(--navy);box-shadow:0 5px 0 var(--gold2),0 10px 18px #0006}
+.btn.p:hover{filter:brightness(1.08)}
+.btn.p:active{transform:translateY(4px);box-shadow:0 1px 0 var(--gold2)}
+.btn.s{background:#1b3f86;color:var(--ink);box-shadow:0 5px 0 #0e2755}
+.btn.s:active{transform:translateY(4px);box-shadow:0 1px 0 #0e2755}
+.help{font-size:.8rem;color:var(--muted);margin:12px 0 0}
+.help code{background:#020c24;padding:1px 6px;border-radius:6px;font-family:var(--mono);color:var(--gold)}
+.res-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:20px;align-items:start}
+.score{background:#020c24;border:3px solid var(--gold);border-radius:16px;padding:12px 16px;margin-bottom:12px;box-shadow:inset 0 0 24px #ffc72c22,0 0 20px #ffc72c33}
+.score span{display:block;font-size:.72rem;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+.score b{display:block;font-family:var(--game);font-size:1.55rem;color:var(--gold);text-shadow:0 0 14px #ffc72caa;word-break:break-word;animation:pop .5s}
+.rows{width:100%;border-collapse:collapse;margin-bottom:10px}
+.rows td{padding:8px 6px;border-bottom:1px solid #ffffff1a;vertical-align:top}
+.rows td:first-child{color:var(--muted);font-size:.88rem}
+.rows td:last-child{font-family:var(--mono);font-weight:700;text-align:right;word-break:break-word}
+details.steps{background:#020c24;border:1px solid var(--line);border-radius:12px;padding:8px 14px;margin-top:6px;overflow-x:auto}
+details.steps summary{cursor:pointer;font-weight:800;color:var(--gold)}
+details.steps>div>div{padding:4px 0}
+.locked{display:none}
+.note{font-size:.85rem;color:var(--muted);margin:10px 0}
+.err{background:#4a1220;color:#ffb4b4;border:2px solid var(--bad);border-radius:14px;padding:12px 16px;font-weight:700}
+.plotbox{background:#f7faff;border:3px solid var(--gold);border-radius:16px;padding:6px;box-shadow:0 0 24px #ffc72c33}
+canvas{width:100%;height:360px;display:block;border-radius:10px;background:#f7faff}
+.chal{background:#1b0f3a;border:2px dashed var(--gold);border-radius:14px;padding:12px;margin-bottom:12px}
+.chal .grow{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.chal .grow input{flex:1;min-width:140px}
+.chal .btn{padding:8px 14px}
+.fb{margin-top:8px;font-weight:800;min-height:1.2em}
+.win{color:var(--ok);font-weight:800;font-size:1.05rem;animation:pop .6s}.lose{color:var(--muted);font-weight:700}
+#toasts{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:8px;z-index:50;pointer-events:none}
+.toast{background:var(--gold);color:var(--navy);font-weight:800;padding:10px 16px;border-radius:12px;box-shadow:0 8px 24px #000a;animation:slide .35s ease both}
+.toast.out{opacity:0;transform:translateX(30px);transition:.5s}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes slide{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:none}}
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr;padding:12px 14px 32px}
+  nav{position:static;display:flex;gap:6px;overflow-x:auto;max-height:none;padding:8px}
+  nav h2,nav .prog{display:none}
+  nav button{white-space:nowrap;width:auto}
+  .res-grid{grid-template-columns:1fr}
+  .top{padding:14px}.ttl h1{font-size:1.25rem}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <label class="logo" id="logoBox" title="Haz clic para subir el logo de la UMG">
+    <input type="file" id="logoFile" accept="image/*" hidden>
+    <img id="logoImg" alt="Logo UMG" hidden>
+    <span id="logoHint"><b style="font-size:2.2rem;display:block;line-height:1">+</b><small>SUBIR LOGO UMG</small></span>
+  </label>
+  <div class="ttl">
+    <small>Universidad Mariano Gálvez de Guatemala</small>
+    <h1>Misión Cálculo: Integrales</h1>
+    <p>Capítulos 5, 6 y 7 · Elige una misión, ajusta los datos con los deslizadores y mira la gráfica cobrar vida.</p>
+  </div>
+  <div class="hud">
+    <div class="lvlrow">
+      <div class="lvl"><div><small>NIVEL</small><b id="lvl">1</b></div></div>
+      <div class="xpwrap"><div class="xpbar"><div class="xpfill" id="xpfill"></div></div>
+        <div class="xptxt"><span id="xptxt">0 / 100 XP</span><span id="prog"></span></div></div>
+    </div>
+    <div class="badges" id="badges"></div>
+    <label class="sw"><input type="checkbox" id="chalToggle"> MODO RETO (adivina el resultado)</label>
+  </div>
+</header>
+<div class="layout">
+  <nav id="nav"></nav>
+  <main id="main"></main>
+</div>
+<div id="toasts"></div>
+
+<script>
+/* =====================================================================
+   1. ANALIZADOR DE EXPRESIONES (sin eval)
+   ===================================================================== */
+const FUNCS = {sqrt:Math.sqrt,cbrt:Math.cbrt,sin:Math.sin,cos:Math.cos,tan:Math.tan,asin:Math.asin,acos:Math.acos,
+  atan:Math.atan,sinh:Math.sinh,cosh:Math.cosh,tanh:Math.tanh,exp:Math.exp,ln:Math.log,log:Math.log10,abs:Math.abs};
+const CONSTS = {pi:Math.PI, e:Math.E};
+const VARS = ['x','t','y','u'];             // cualquiera de estas letras es "la variable"
+const NAMES = [...Object.keys(FUNCS),...Object.keys(CONSTS),...VARS].sort((a,b)=>b.length-a.length);
+
+function tokenize(src){
+  const s = String(src).toLowerCase().replace(/π/g,'pi').replace(/\s+/g,'').replace(/,/g,'.')
+    .replace(/\*\*/g,'^').replace(/×/g,'*').replace(/−/g,'-');
+  const out=[]; let i=0, m;
+  while(i<s.length){
+    const c=s[i];
+    if((m=/^(\d+\.?\d*|\.\d+)/.exec(s.slice(i)))){ out.push({t:'num',v:parseFloat(m[1])}); i+=m[1].length; continue; }
+    if(/[a-z]/.test(c)){
+      const nm=NAMES.find(n=>s.startsWith(n,i));
+      if(!nm) throw new Error('No reconozco «'+s.slice(i).match(/^[a-z]+/)[0]+'»');
+      out.push({t:nm in FUNCS?'fn':nm in CONSTS?'const':'var',v:nm}); i+=nm.length; continue;
+    }
+    if('+-*/^()'.includes(c)){ out.push({t:'op',v:c}); i++; continue; }
+    throw new Error('Carácter no válido: «'+c+'»');
+  }
+  return out;
+}
+
+function parse(src){
+  if(String(src).trim()==='') throw new Error('Hay un campo vacío.');
+  const T=tokenize(src); let p=0;
+  const peek=()=>T[p], isOp=(v)=>T[p]&&T[p].t==='op'&&T[p].v===v;
+  function expect(v){ if(!isOp(v)) throw new Error('Falta «'+v+'» en la expresión.'); p++; }
+  function expr(){
+    let n=term();
+    while(isOp('+')||isOp('-')){ const op=T[p++].v; n={k:'bin',op,a:n,b:term()}; }
+    return n;
+  }
+  function term(){
+    let n=unary();
+    for(;;){
+      const k=peek(); if(!k) break;
+      if(k.t==='op'&&(k.v==='*'||k.v==='/')){ p++; n={k:'bin',op:k.v,a:n,b:unary()}; }
+      else if(k.t==='num'||k.t==='var'||k.t==='const'||k.t==='fn'||isOp('(')){ n={k:'bin',op:'*',a:n,b:power()}; } // 2x, 3sin(x), (x+1)(x-1)
+      else break;
+    }
+    return n;
+  }
+  function unary(){
+    if(isOp('-')){ p++; return {k:'neg',a:unary()}; }
+    if(isOp('+')){ p++; return unary(); }
+    return power();
+  }
+  function power(){
+    const b=atom();
+    if(isOp('^')){ p++; return {k:'bin',op:'^',a:b,b:unary()}; }
+    return b;
+  }
+  function atom(){
+    const k=T[p++];
+    if(!k) throw new Error('La expresión termina de forma inesperada.');
+    if(k.t==='num') return {k:'num',v:k.v};
+    if(k.t==='var') return {k:'var'};
+    if(k.t==='const') return {k:'const',v:CONSTS[k.v],name:k.v};
+    if(k.t==='fn'){ expect('('); const a=expr(); expect(')'); return {k:'fn',name:k.v,a}; }
+    if(k.v==='('){ const a=expr(); expect(')'); return a; }
+    throw new Error('Símbolo inesperado «'+k.v+'».');
+  }
+  const ast=expr();
+  if(p<T.length) throw new Error('Sobra «'+T[p].v+'» en la expresión.');
+  return ast;
+}
+
+function build(n){
+  switch(n.k){
+    case 'num': case 'const': { const v=n.v; return ()=>v; }
+    case 'var': return x=>x;
+    case 'neg': { const a=build(n.a); return x=>-a(x); }
+    case 'fn':  { const a=build(n.a), f=FUNCS[n.name]; return x=>f(a(x)); }
+    case 'bin': { const a=build(n.a), b=build(n.b);
+      switch(n.op){
+        case '+': return x=>a(x)+b(x);
+        case '-': return x=>a(x)-b(x);
+        case '*': return x=>a(x)*b(x);
+        case '/': return x=>a(x)/b(x);
+        case '^': return x=>Math.pow(a(x),b(x));
+      } }
+  }
+}
+const hasVar=n=>n.k==='var'||(n.a&&hasVar(n.a))||(n.b&&hasVar(n.b))||false;
+const F = s => build(parse(s));                       // string -> función f(x)
+function N(s){                                        // string -> número (admite pi/2, 1/3, sqrt(2)...)
+  const ast=parse(s); if(hasVar(ast)) throw new Error('«'+s+'» debe ser un número, no una función.');
+  const v=build(ast)(0); if(!Number.isFinite(v)) throw new Error('«'+s+'» no es un número válido.'); return v;
+}
+
+/* =====================================================================
+   2. ÁLGEBRA SIMBÓLICA BÁSICA (potencias, trigonométricas, exponencial)
+   ===================================================================== */
+const key=e=>+e.toFixed(10);
+const clean=m=>{ const r=new Map(); for(const [e,c] of m) if(Math.abs(c)>1e-12) r.set(key(e),c); return r; };
+const sAdd=(a,b,sg=1)=>{ const r=new Map(a); for(const [e,c] of b) r.set(e,(r.get(e)||0)+sg*c); return clean(r); };
+const sMul=(a,b)=>{ const r=new Map(); for(const [e1,c1] of a) for(const [e2,c2] of b){ const e=key(e1+e2); r.set(e,(r.get(e)||0)+c1*c2);} return clean(r); };
+const constOf=n=>build(n)(0);
+
+function toSeries(n){                        // expresión -> {exponente: coeficiente}
+  const NO=()=>{ const e=new Error('NOSERIES'); e.nos=true; return e; };
+  switch(n.k){
+    case 'num': case 'const': return clean(new Map([[0,n.v]]));
+    case 'var': return new Map([[1,1]]);
+    case 'neg': return sMul(toSeries(n.a),new Map([[0,-1]]));
+    case 'fn': {
+      if(!hasVar(n.a)) return clean(new Map([[0,build(n)(0)]]));
+      if(n.name==='sqrt'||n.name==='cbrt'){ const s=toSeries(n.a); if(s.size!==1) throw NO();
+        const [[e,c]]=[...s]; const r=n.name==='sqrt'?.5:1/3; const cc=Math.pow(c,r); if(!isFinite(cc)) throw NO();
+        return new Map([[key(e*r),cc]]); }
+      throw NO();
+    }
+    case 'bin': {
+      if(!hasVar(n)) return clean(new Map([[0,build(n)(0)]]));
+      if(n.op==='+') return sAdd(toSeries(n.a),toSeries(n.b),1);
+      if(n.op==='-') return sAdd(toSeries(n.a),toSeries(n.b),-1);
+      if(n.op==='*') return sMul(toSeries(n.a),toSeries(n.b));
+      if(n.op==='/'){ const d=toSeries(n.b); if(d.size!==1) throw NO(); const [[e,c]]=[...d];
+        return sMul(toSeries(n.a),new Map([[key(-e),1/c]])); }
+      if(n.op==='^'){
+        if(hasVar(n.b)) throw NO();
+        const r=constOf(n.b), s=toSeries(n.a);
+        if(s.size===1){ const [[e,c]]=[...s]; const cc=Math.pow(c,r); if(!isFinite(cc)) throw NO(); return new Map([[key(e*r),cc]]); }
+        if(Number.isInteger(r)&&r>=0&&r<=12){ let res=new Map([[0,1]]); for(let i=0;i<r;i++) res=sMul(res,s); return res; }
+        throw NO();
+      }
+    }
+  }
+  throw NO();
+}
+const evalSer=(m,x)=>{ let s=0; for(const [e,c] of m) s+= e===0?c:c*Math.pow(x,e); return s; };
+const derSer=m=>{ const r=new Map(); for(const [e,c] of m) if(e!==0) r.set(key(e-1),c*e); return clean(r); };
+
+/* ----- formato TeX ----- */
+function rat(x,maxq=1000,tol=1e-9){
+  for(let q=1;q<=maxq;q++){ const p=Math.round(x*q); if(Math.abs(x-p/q)<=tol*Math.max(1,Math.abs(x))) return [p,q]; }
+  return null;
+}
+function texN(x){
+  const r=rat(x);
+  if(r){ const [p,q]=r; if(q===1) return String(p); return (p<0?'-':'')+'\\frac{'+Math.abs(p)+'}{'+q+'}'; }
+  return String(+x.toPrecision(6));
+}
+const bodyX=(e,v='x')=> Math.abs(e)<1e-12?'' : Math.abs(e-1)<1e-12? v : v+'^{'+texN(e)+'}';
+function texSum(terms){
+  let out='';
+  for(const t of terms){
+    if(Math.abs(t.c)<1e-12) continue;
+    const neg=t.c<0, a=Math.abs(t.c);
+    const coef=(Math.abs(a-1)<1e-12&&t.body)?'':texN(a);
+    const s=coef+t.body;
+    out+= out ? (neg?' - ':' + ')+s : (neg?'-':'')+s;
+  }
+  return out||'0';
+}
+const serTerms=m=>[...m].sort((a,b)=>b[0]-a[0]).map(([e,c])=>({c,body:bodyX(e)}));
+
+/* ----- antiderivada de sumas de potencias, sin(kx+m), cos(kx+m), e^(kx+m) ----- */
+function splitSum(n,sg=1,acc=[]){
+  if(n.k==='bin'&&(n.op==='+'||n.op==='-')){ splitSum(n.a,sg,acc); splitSum(n.b,n.op==='+'?sg:-sg,acc); }
+  else if(n.k==='neg') splitSum(n.a,-sg,acc);
+  else acc.push({sg,n});
+  return acc;
+}
+function matchBasic(n){
+  let c=1;
+  for(;;){
+    if(n.k==='neg'){ c=-c; n=n.a; continue; }
+    if(n.k==='bin'&&n.op==='*'){ if(!hasVar(n.a)){ c*=constOf(n.a); n=n.b; continue; } if(!hasVar(n.b)){ c*=constOf(n.b); n=n.a; continue; } }
+    if(n.k==='bin'&&n.op==='/'&&!hasVar(n.b)){ c/=constOf(n.b); n=n.a; continue; }
+    break;
+  }
+  let arg,name;
+  if(n.k==='bin'&&n.op==='^'&&n.a.k==='const'&&n.a.name==='e'){ arg=n.b; name='exp'; }
+  else if(n.k==='fn'&&['sin','cos','exp'].includes(n.name)){ arg=n.a; name=n.name; }
+  else return null;
+  const g=build(arg), m=g(0), k=g(1)-g(0);
+  if(Math.abs(k)<1e-12||Math.abs(g(2.5)-(m+2.5*k))>1e-9) return null;
+  return {c,name,k,m};
+}
+function integrateExpr(ast){
+  let ser=new Map(), basics=[];
+  for(const {sg,n} of splitSum(ast)){
+    try{ ser=sAdd(ser,toSeries(n),sg); }
+    catch(e){ if(!e.nos) throw e; const b=matchBasic(n); if(!b) throw new Error('Esta función no tiene antiderivada simple en esta calculadora (solo potencias, sin, cos y e^x). Usa la integral definida numérica.'); b.c*=sg; basics.push(b); }
+  }
+  const argTex=b=>texSum([{c:b.k,body:'x'},{c:b.m,body:''}]);
+  const fT=serTerms(ser), FT=[]; let lnC=0; const Fser=new Map();
+  for(const [e,c] of ser){ if(Math.abs(e+1)<1e-12) lnC+=c; else Fser.set(key(e+1),c/(e+1)); }
+  FT.push(...serTerms(Fser)); if(lnC) FT.push({c:lnC,body:'\\ln|x|'});
+  const bf=[];
+  for(const b of basics){
+    const a=argTex(b);
+    if(b.name==='sin'){ fT.push({c:b.c,body:'\\sin('+a+')'}); FT.push({c:-b.c/b.k,body:'\\cos('+a+')'}); }
+    if(b.name==='cos'){ fT.push({c:b.c,body:'\\cos('+a+')'}); FT.push({c:b.c/b.k,body:'\\sin('+a+')'}); }
+    if(b.name==='exp'){ fT.push({c:b.c,body:'e^{'+a+'}'}); FT.push({c:b.c/b.k,body:'e^{'+a+'}'}); }
+  }
+  const Fn=x=>{ let s=evalSer(Fser,x)+(lnC?lnC*Math.log(Math.abs(x)):0);
+    for(const b of basics){ const u=b.k*x+b.m;
+      s+= b.name==='sin'? -b.c/b.k*Math.cos(u) : b.name==='cos'? b.c/b.k*Math.sin(u) : b.c/b.k*Math.exp(u); }
+    return s; };
+  return {F:Fn, tex:texSum(FT), fTex:texSum(fT)};
+}
+
+/* =====================================================================
+   3. NUMÉRICA
+   ===================================================================== */
+function integrate(f,a,b){                   // Simpson adaptativo
+  if(a===b) return 0;
+  let sign=1; if(a>b){ [a,b]=[b,a]; sign=-1; }
+  const eps0=1e-10*Math.max(1,b-a);
+  const g=x=>{ let v=f(x); if(Number.isFinite(v)) return v;
+    const e=1e-9*(b-a); v=f(x<=a?x+e:x>=b?x-e:x+e); return v; };
+  let calls=0;                                   // presupuesto: evita bucles larguísimos con singularidades
+  function rec(a,b,fa,fm,fb,whole,eps,depth){
+    const m=(a+b)/2, l=(a+m)/2, r=(m+b)/2, fl=g(l), fr=g(r);
+    const L=(m-a)/6*(fa+4*fl+fm), R=(b-m)/6*(fm+4*fr+fb), d=L+R-whole;
+    if(depth<=0||++calls>60000||Math.abs(d)<=15*eps) return L+R+d/15;
+    return rec(a,m,fa,fl,fm,L,eps/2,depth-1)+rec(m,b,fm,fr,fb,R,eps/2,depth-1);
+  }
+  const K=8, h=(b-a)/K; let tot=0;
+  for(let i=0;i<K;i++){
+    const x0=a+i*h, x1=x0+h, xm=(x0+x1)/2, f0=g(x0), fm=g(xm), f1=g(x1);
+    tot+=rec(x0,x1,f0,fm,f1,h/6*(f0+4*fm+f1),eps0/K,40);
+  }
+  return sign*tot;
+}
+function deriv(f,x){
+  const h=1e-6*Math.max(1,Math.abs(x));
+  let v=(f(x+h)-f(x-h))/(2*h);
+  if(!Number.isFinite(v)) v=(f(x+h)-f(x))/h;
+  if(!Number.isFinite(v)) v=(f(x)-f(x-h))/h;
+  return v;
+}
+function riemann(f,a,b,n,mode){
+  const dx=(b-a)/n; let s=0;
+  if(mode==='simpson'){ if(n%2) n++; const h=(b-a)/n; s=f(a)+f(b); for(let i=1;i<n;i++) s+=f(a+i*h)*(i%2?4:2); return s*h/3; }
+  for(let i=0;i<n;i++){ const x=a+i*dx;
+    s+= mode==='izq'?f(x) : mode==='der'?f(x+dx) : mode==='med'?f(x+dx/2) : (f(x)+f(x+dx))/2; }
+  return s*dx;
+}
+function roots(f,a,b,n=4000){
+  const out=[]; let x0=a, y0=f(a);
+  for(let i=1;i<=n;i++){ const x1=a+(b-a)*i/n, y1=f(x1);
+    if(Number.isFinite(y0)&&Number.isFinite(y1)){
+      if(y0===0) out.push(x0);
+      else if(y0*y1<0){ let lo=x0,hi=x1,flo=y0; for(let k=0;k<60;k++){ const m=(lo+hi)/2, fm=f(m); if(flo*fm<=0) hi=m; else {lo=m;flo=fm;} } out.push((lo+hi)/2); }
+    }
+    x0=x1;y0=y1; }
+  if(f(b)===0) out.push(b);
+  return out.filter((r,i)=>i===0||Math.abs(r-out[i-1])>1e-7*(b-a));
+}
+const lin=(a,b,n=400)=>Array.from({length:n+1},(_,i)=>a+(b-a)*i/n);
+
+/* =====================================================================
+   4. GRÁFICAS (canvas)
+   ===================================================================== */
+const COL={blue:'#2563eb',red:'#dc2626',green:'#059669',amber:'#d97706',violet:'#7c3aed',ink:'#1d2433'};
+const FILL={pos:'rgba(37,99,235,.25)',neg:'rgba(220,38,38,.25)',amb:'rgba(217,119,6,.22)',vio:'rgba(124,58,237,.14)',grn:'rgba(5,150,105,.22)'};
+const curve=(f,a,b,color=COL.blue,label,n=400)=>({color,label,pts:lin(a,b,n).map(x=>{const y=f(x);return Number.isFinite(y)?[x,y]:null;})});
+function band(xs,U,L,swap=false){
+  const polys=[]; let top=[],bot=[],sg=0;
+  const flush=()=>{ if(top.length>1){ const pts=top.concat(bot.reverse()); polys.push({pts:swap?pts.map(p=>[p[1],p[0]]):pts,color:sg<0?FILL.neg:FILL.pos}); } top=[];bot=[]; };
+  for(let i=0;i<xs.length;i++){
+    const u=U[i], l=L[i];
+    if(!Number.isFinite(u)||!Number.isFinite(l)){ flush(); sg=0; continue; }
+    const d=u-l, s=d>0?1:d<0?-1:0;
+    if(sg!==0&&s!==0&&s!==sg&&top.length){
+      const dp=U[i-1]-L[i-1], t=dp/(dp-d), xc=xs[i-1]+t*(xs[i]-xs[i-1]), yc=U[i-1]+t*(u-U[i-1]);
+      top.push([xc,yc]); bot.push([xc,yc]); flush(); top=[[xc,yc]]; bot=[[xc,yc]]; sg=s;
+    }
+    if(sg===0&&s!==0) sg=s;
+    top.push([xs[i],u]); bot.push([xs[i],l]);
+  }
+  flush(); return polys;
+}
+const bandFns=(U,L,a,b,swap=false,n=400)=>{ const xs=lin(a,b,n); return band(xs,xs.map(U),xs.map(L),swap); };
+const niceStep=r=>{ const raw=r/6, p=Math.pow(10,Math.floor(Math.log10(raw))), m=raw/p; return (m<1.5?1:m<3?2:m<7?5:10)*p; };
+
+let lastPlot=null;
+function drawPlot(cv,spec){
+  lastPlot={cv,spec};
+  const dpr=window.devicePixelRatio||1, W=cv.clientWidth||600, H=cv.clientHeight||340;
+  cv.width=W*dpr; cv.height=H*dpr;
+  const ctx=cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,W,H);
+  const xs=[0],ys=[0];
+  const add=(p,clip)=>{ if(p&&Number.isFinite(p[0])&&Number.isFinite(p[1])){ xs.push(p[0]); ys.push(p[1]); } };
+  (spec.polys||[]).forEach(p=>p.pts.forEach(add));
+  (spec.points||[]).forEach(p=>add([p.x,p.y]));
+  (spec.curves||[]).forEach(c=>c.pts.forEach(p=>{ if(p){ xs.push(p[0]); } }));
+  const cy=[]; (spec.curves||[]).forEach(c=>c.pts.forEach(p=>{ if(p) cy.push(p[1]); }));
+  if(cy.length){ const abs=cy.map(Math.abs).sort((a,b)=>a-b), lim=abs[Math.floor(abs.length*.95)]*8+1; cy.forEach(y=>{ if(Math.abs(y)<=lim) ys.push(y); }); }
+  let x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+  if(x1-x0<1e-9){x0-=1;x1+=1;} if(y1-y0<1e-9){y0-=1;y1+=1;}
+  const px=(x1-x0)*.07, py=(y1-y0)*.1; x0-=px;x1+=px;y0-=py;y1+=py;
+  const L=46,R=14,T=14,B=28, w=W-L-R, h=H-T-B;
+  const X=x=>L+(x-x0)/(x1-x0)*w, Y=y=>T+(1-(y-y0)/(y1-y0))*h;
+  ctx.font='12px system-ui,sans-serif'; ctx.fillStyle='#5d6678'; ctx.strokeStyle='#ece9df'; ctx.lineWidth=1;
+  const sx=niceStep(x1-x0), sy=niceStep(y1-y0);
+  ctx.textAlign='center'; ctx.textBaseline='top';
+  for(let v=Math.ceil(x0/sx)*sx; v<=x1; v+=sx){ ctx.beginPath(); ctx.moveTo(X(v),T); ctx.lineTo(X(v),T+h); ctx.stroke(); ctx.fillText(+v.toPrecision(6),X(v),T+h+6); }
+  ctx.textAlign='right'; ctx.textBaseline='middle';
+  for(let v=Math.ceil(y0/sy)*sy; v<=y1; v+=sy){ ctx.beginPath(); ctx.moveTo(L,Y(v)); ctx.lineTo(L+w,Y(v)); ctx.stroke(); ctx.fillText(+v.toPrecision(6),L-6,Y(v)); }
+  ctx.save(); ctx.beginPath(); ctx.rect(L,T,w*(spec.reveal==null?1:spec.reveal),h); ctx.clip();
+  ctx.strokeStyle='#8a8f9c'; ctx.lineWidth=1.3;
+  ctx.beginPath(); ctx.moveTo(L,Y(0)); ctx.lineTo(L+w,Y(0)); ctx.moveTo(X(0),T); ctx.lineTo(X(0),T+h); ctx.stroke();
+  (spec.polys||[]).forEach(p=>{ ctx.fillStyle=p.color||FILL.pos; ctx.beginPath(); p.pts.forEach((q,i)=>i?ctx.lineTo(X(q[0]),Y(q[1])):ctx.moveTo(X(q[0]),Y(q[1]))); ctx.closePath(); ctx.fill();
+    if(p.stroke){ ctx.strokeStyle=p.stroke; ctx.lineWidth=1; ctx.stroke(); } });
+  (spec.curves||[]).forEach(c=>{ ctx.strokeStyle=c.color||COL.blue; ctx.lineWidth=c.dash?1.6:2.4; ctx.setLineDash(c.dash?[6,5]:[]); ctx.beginPath(); let pen=false;
+    c.pts.forEach(p=>{ if(!p){pen=false;return;} if(!pen){ctx.moveTo(X(p[0]),Y(p[1]));pen=true;} else ctx.lineTo(X(p[0]),Y(p[1])); }); ctx.stroke(); ctx.setLineDash([]); });
+  (spec.points||[]).forEach(p=>{ ctx.fillStyle=p.color||COL.red; ctx.beginPath(); ctx.arc(X(p.x),Y(p.y),5,0,7); ctx.fill();
+    if(p.label){ ctx.fillStyle=COL.ink; ctx.textAlign='left'; ctx.textBaseline='bottom'; ctx.fillText(p.label,X(p.x)+8,Y(p.y)-6); } });
+  ctx.restore();
+  let ly=T+4; ctx.textAlign='left'; ctx.textBaseline='middle';
+  (spec.curves||[]).filter(c=>c.label).forEach(c=>{ ctx.fillStyle='rgba(255,255,255,.85)'; const tw=ctx.measureText(c.label).width; ctx.fillRect(L+6,ly-2,tw+30,18);
+    ctx.strokeStyle=c.color; ctx.lineWidth=2.4; ctx.beginPath(); ctx.moveTo(L+10,ly+7); ctx.lineTo(L+24,ly+7); ctx.stroke(); ctx.fillStyle=COL.ink; ctx.fillText(c.label,L+30,ly+7); ly+=20; });
+}
+window.addEventListener('resize',()=>{ if(lastPlot&&document.body.contains(lastPlot.cv)) drawPlot(lastPlot.cv,lastPlot.spec); });
+
+/* =====================================================================
+   5. UTILIDADES DE PRESENTACIÓN
+   ===================================================================== */
+function fmt(x){
+  if(!Number.isFinite(x)) return 'indefinido';
+  if(Math.abs(x)<1e-11) return '0';
+  return (Math.abs(x)>=1e8||Math.abs(x)<1e-5)? x.toExponential(6) : String(+x.toPrecision(10));
+}
+function hint(x){
+  if(!Number.isFinite(x)||Math.abs(x)<1e-9||Math.abs(x-Math.round(x))<1e-8) return '';
+  let r=rat(x/Math.PI,24,1e-8);
+  if(r&&r[0]!==0&&Math.abs(r[0])<=200) return '  = '+(r[0]===1?'':r[0]===-1?'-':r[0])+'π'+(r[1]>1?'/'+r[1]:'');
+  r=rat(x,200,1e-8); if(r&&r[1]>1) return '  = '+r[0]+'/'+r[1];
+  return '';
+}
+const val=x=>fmt(x)+hint(x);
+const tex=(el,s,display=true)=>{ if(window.katex){ try{ katex.render(s,el,{displayMode:display,throwOnError:false}); return; }catch(e){} } el.textContent=s; };
+const checkRow=(Fn,f,x0)=>{ const d=deriv(Fn,x0), v=f(x0); return ['Verificación  F′(x₀) ≈ f(x₀)', 'x₀='+fmt(x0)+' → '+fmt(d)+' ≈ '+fmt(v)]; };
+const ordered=(a,b)=>{ if(!(b>a)) throw new Error('El límite superior debe ser mayor que el inferior.'); };
+const txx=(s)=>String(s).replace(/\\/g,'\\\\');
+
+/* =====================================================================
+   6. MÓDULOS (una pestaña por tema; cada uno devuelve pasos, filas y gráfica)
+   ===================================================================== */
+const MODULES=[];
+const mod=(m)=>MODULES.push(m);
+
+/* ---------- 5.1 Integral indefinida ---------- */
+mod({id:'indef',cap:5,sec:'5.1',title:'La integral indefinida',
+  desc:'Antiderivada de polinomios, potencias (también fraccionarias y 1/x), sin, cos y e^x. Opcionalmente evalúa la integral definida con F(b) − F(a).',
+  tex:[String.raw`\int x^n\,dx=\frac{x^{n+1}}{n+1}+C\quad(n\ne-1)`,String.raw`\int \frac1x\,dx=\ln|x|+C`],
+  fields:[{id:'f',label:'f(x)',val:'3x^2 + 2x - 5 + sqrt(x)'},{id:'a',label:'a (opcional)',val:'0'},{id:'b',label:'b (opcional)',val:'4'}],
+  run(v){
+    const ast=parse(v.f), I=integrateExpr(ast), f=build(ast);
+    const steps=[String.raw`f(x)=${I.fTex}`, String.raw`\int f(x)\,dx=${I.tex}+C`], rows=[];
+    rows.push(checkRow(I.F,f,1.37));
+    let plot=null;
+    if(v.a.trim()&&v.b.trim()){
+      const a=N(v.a), b=N(v.b); ordered(a,b);
+      const r=I.F(b)-I.F(a);
+      steps.push(String.raw`\int_{${texN(a)}}^{${texN(b)}} f(x)\,dx=F(b)-F(a)=${fmt(I.F(b))}-(${fmt(I.F(a))})`);
+      rows.unshift(['∫ de a hasta b  =  F(b) − F(a)',val(r)]); rows[0].big=true;
+      rows.push(['Comprobación numérica (Simpson)',fmt(integrate(f,a,b))]);
+      plot={polys:bandFns(f,()=>0,a,b),curves:[curve(f,a,b,COL.blue,'f(x)')]};
+    }
+    if(!plot) plot={curves:[curve(f,-4,4,COL.blue,'f(x)'),curve(I.F,-4,4,COL.amber,'F(x)')]};
+    return {steps,rows,plot};
+  }});
+
+/* ---------- 5.2 Sustitución u ---------- */
+mod({id:'usub',cap:5,sec:'5.2',title:'Integración por sustitución u',
+  desc:'Resuelve ∫ x·(x − c)ⁿ dx con u = x − c (ejemplo del curso: ∫ x√(x−1) dx, con c = 1 y n = 1/2). Muestra el procedimiento paso a paso.',
+  tex:[String.raw`u=x-c,\quad x=u+c,\quad dx=du`,String.raw`\int x(x-c)^n\,dx=\int (u+c)\,u^n\,du=\int u^{n+1}du+c\int u^n du`],
+  fields:[{id:'c',label:'c   (u = x − c)',val:'1'},{id:'p',label:'n   (exponente, ej. 1/2)',val:'1/2'},{id:'a',label:'a (opcional)',val:'1'},{id:'b',label:'b (opcional)',val:'5'}],
+  run(v){
+    const c=N(v.c), p=N(v.p);
+    const prim=(k)=> Math.abs(k+1)<1e-12 ? {tex:String.raw`\ln|u|`,f:u=>Math.log(Math.abs(u))} : {tex:String.raw`\frac{u^{${texN(k+1)}}}{${texN(k+1)}}`,f:u=>Math.pow(u,k+1)/(k+1)};
+    const A=prim(p+1), B=prim(p);
+    const Fn=x=>{ const u=x-c; return A.f(u)+c*B.f(u); };
+    const cT=c===0?'':(c<0?'':'+')+texN(c);
+    const xc=c===0?'x':'(x'+(c<0?'+':'-')+texN(Math.abs(c))+')';
+    const f=x=>x*Math.pow(x-c,p);
+    const steps=[
+      String.raw`\int x\,${xc}^{${texN(p)}}dx \quad\text{con}\quad u=x${c===0?'':(c>0?'-':'+')+texN(Math.abs(c))}`,
+      String.raw`=\int (u${cT})\,u^{${texN(p)}}du=\int u^{${texN(p+1)}}du${c===0?'':(c>0?'+':'-')+(Math.abs(c)===1?'':texN(Math.abs(c)))}\int u^{${texN(p)}}du`,
+      String.raw`=${A.tex}${c===0?'':(c>0?'+':'-')+(Math.abs(c)===1?'':texN(Math.abs(c)))+String.raw`\,`+B.tex}+C`,
+      String.raw`\text{Regresando }u=x${c===0?'':(c>0?'-':'+')+texN(Math.abs(c))}:\quad F(x)=${A.tex.replace(/u/g,'(x'+(c>0?'-':'+')+texN(Math.abs(c))+')')}${c===0?'':(c>0?'+':'-')+(Math.abs(c)===1?'':texN(Math.abs(c)))+String.raw`\,`+B.tex.replace(/u/g,'(x'+(c>0?'-':'+')+texN(Math.abs(c))+')')}+C`
+    ];
+    if(c===0) steps[3]=String.raw`F(x)=${A.tex.replace(/u/g,'x')}+C`;
+    const rows=[checkRow(Fn,f,c+1.7)]; let plot=null;
+    if(v.a.trim()&&v.b.trim()){
+      const a=N(v.a), b=N(v.b); ordered(a,b);
+      rows.unshift(['∫ de a hasta b  =  F(b) − F(a)',val(Fn(b)-Fn(a))]); rows[0].big=true;
+      rows.push(['Comprobación numérica (Simpson)',fmt(integrate(f,a,b))]);
+      plot={polys:bandFns(f,()=>0,a,b),curves:[curve(f,a,b,COL.blue,'x·(x−c)^n')]};
+    }
+    if(!plot) plot={curves:[curve(f,c+0.01,c+6,COL.blue,'f(x)'),curve(Fn,c+0.01,c+6,COL.amber,'F(x)')]};
+    return {steps,rows,plot,note:'Se requiere x − c > 0 cuando n es fraccionario.'};
+  }});
+
+/* ---------- 5.3 / 5.4 Integral definida ---------- */
+mod({id:'prob',cap:5,sec:'5.3',title:'El problema de área',
+  desc:'Aproxima el área bajo la curva con sumas de Riemann (izquierda, derecha, punto medio, trapecio) o Simpson y la compara con el valor exacto.',
+  tex:[String.raw`\int_a^b f(x)\,dx\approx\sum_{i=0}^{n-1} f(x_i)\,\Delta x,\qquad \Delta x=\frac{b-a}{n}`,String.raw`\int_a^b f(x)\,dx=F(b)-F(a),\qquad F'(x)=f(x)`],
+  fields:[{id:'f',label:'f(x)',val:'sqrt(9 - x^2)'},{id:'a',label:'a',val:'0'},{id:'b',label:'b',val:'3'},{id:'n',label:'n (subintervalos)',val:'12'},
+    {id:'m',label:'Método',type:'select',opts:[['izq','Suma izquierda'],['der','Suma derecha'],['med','Punto medio'],['trap','Trapecio'],['simpson','Simpson']],val:'der'}],
+  run(v){
+    const f=F(v.f), a=N(v.a), b=N(v.b), n=Math.max(1,Math.round(N(v.n))); ordered(a,b);
+    const label=v.m==='simpson'?'Simpson':{izq:'Suma izquierda',der:'Suma derecha',med:'Punto medio',trap:'Trapecio'}[v.m];
+    const ap=riemann(f,a,b,n,v.m), ex=integrate(f,a,b), dx=(b-a)/n;
+    const rows=[[label+' (n = '+n+')',val(ap)],['Valor exacto (Simpson adaptativo)',val(ex)],['Error absoluto',fmt(Math.abs(ap-ex))],['Δx = (b − a)/n',fmt(dx)]];
+    rows[1].big=true;
+    const steps=[String.raw`\Delta x=\frac{b-a}{n}=\frac{${fmt(b)}-${fmt(a)}}{${n}}=${fmt(dx)}`];
+    try{ const I=integrateExpr(parse(v.f)); steps.push(String.raw`F(x)=${I.tex}`, String.raw`F(b)-F(a)=${fmt(I.F(b))}-(${fmt(I.F(a))})=${fmt(I.F(b)-I.F(a))}`); rows.push(['F(b) − F(a)',val(I.F(b)-I.F(a))]); }catch(e){ if(!/Esta función|NOSERIES/.test(e.message)) throw e; }
+    const polys=[], show=Math.min(n,80);
+    if(n<=80&&v.m!=='simpson'){
+      for(let i=0;i<show;i++){ const x=a+i*dx, h=v.m==='izq'?f(x):v.m==='der'?f(x+dx):v.m==='med'?f(x+dx/2):null;
+        if(v.m==='trap') polys.push({pts:[[x,0],[x,f(x)],[x+dx,f(x+dx)],[x+dx,0]],color:FILL.amb,stroke:COL.amber});
+        else polys.push({pts:[[x,0],[x,h],[x+dx,h],[x+dx,0]],color:FILL.amb,stroke:COL.amber}); }
+    } else polys.push(...bandFns(f,()=>0,a,b));
+    return {steps,rows,plot:{polys,curves:[curve(f,a,b,COL.blue,'f(x)')]},note:n>80||v.m==='simpson'?'Con n > 80 (o Simpson) se sombrea el área bajo la curva en lugar de dibujar cada rectángulo.':''};
+  }});
+
+/* ---------- 5.4 La integral definida (propiedades) ---------- */
+mod({id:'def',cap:5,sec:'5.4',title:'La integral definida',
+  desc:'Comprueba las propiedades de la integral definida: linealidad, aditividad en un punto c, intercambio de límites y desigualdad con el valor absoluto.',
+  tex:[String.raw`\int_a^b [k f+g]\,dx=k\int_a^b f\,dx+\int_a^b g\,dx`,String.raw`\int_a^b f\,dx=\int_a^c f\,dx+\int_c^b f\,dx`,String.raw`\int_b^a f\,dx=-\int_a^b f\,dx,\qquad \Big|\int_a^b f\,dx\Big|\le\int_a^b |f|\,dx`],
+  fields:[{id:'f',label:'f(x)',val:'x^2'},{id:'g',label:'g(x)',val:'x'},{id:'a',label:'a',val:'0'},{id:'b',label:'b',val:'2'},{id:'c',label:'c  (entre a y b)',val:'1'},{id:'k',label:'k  (constante)',val:'3'}],
+  run(v){
+    const f=F(v.f), g=F(v.g), a=N(v.a), b=N(v.b), c=N(v.c), k=N(v.k); ordered(a,b);
+    if(c<a||c>b) throw new Error('c debe estar entre a y b.');
+    const If=integrate(f,a,b), Ig=integrate(g,a,b), I1=integrate(f,a,c), I2=integrate(f,c,b);
+    const Il=integrate(x=>k*f(x)+g(x),a,b), Ia=integrate(x=>Math.abs(f(x)),a,b), rev=integrate(f,b,a);
+    const rows=[['Integral de f de a a b',val(If)],['Integral de g de a a b',val(Ig)],['Integral de (k·f + g)',val(Il)],['k·(integral de f) + (integral de g)',val(k*If+Ig)],
+      ['Integral de a a c  +  de c a b',val(I1+I2)],['Integral de b a a (límites invertidos)',val(rev)],['|integral de f|  ≤  integral de |f|',fmt(Math.abs(If))+'  ≤  '+fmt(Ia)]];
+    rows[0].big=true;
+    const steps=[String.raw`\int_{${fmt(a)}}^{${fmt(b)}} f\,dx=${fmt(If)}`,String.raw`\int_{${fmt(a)}}^{${fmt(c)}} f\,dx+\int_{${fmt(c)}}^{${fmt(b)}} f\,dx=${fmt(I1)}+${fmt(I2)}=${fmt(I1+I2)}`,String.raw`\int_{${fmt(a)}}^{${fmt(b)}} [${fmt(k)}f+g]\,dx=${fmt(k)}(${fmt(If)})+${fmt(Ig)}=${fmt(k*If+Ig)}`];
+    const left=bandFns(f,()=>0,a,c), right=bandFns(f,()=>0,c,b).map(q=>({...q,color:FILL.amb}));
+    const gc=curve(g,a,b,COL.green,'g(x)'); gc.dash=true;
+    return {steps,rows,plot:{polys:[...left,...right],curves:[curve(f,a,b,COL.blue,'f(x)'),gc],points:[{x:c,y:f(c),label:'c',color:COL.red}]},
+      note:'La región se divide en c: la parte azul y la naranja suman la integral completa.'};
+  }});
+
+/* ---------- 5.5 Teorema fundamental ---------- */
+mod({id:'tfc',cap:5,sec:'5.5',title:'Teorema fundamental del cálculo',
+  desc:'Primera parte con límite superior variable: d/dx ∫ₐ^g(x) f(t) dt = f(g(x))·g′(x). La segunda parte (F(b) − F(a)) está en la pestaña 5.3 · 5.4.',
+  tex:[String.raw`\frac{d}{dx}\int_a^x f(t)\,dt=f(x)`,String.raw`\frac{d}{dx}\int_a^{g(x)} f(t)\,dt=f(g(x))\,g'(x)`,String.raw`\int_a^b f(x)\,dx=F(b)-F(a)`],
+  fields:[{id:'f',label:'f(t)',val:'1/(1 + t^2)'},{id:'a',label:'a (límite inferior fijo)',val:'0'},{id:'g',label:'g(x) (límite superior)',val:'x^2'},{id:'x0',label:'x₀ (punto a evaluar)',val:'1'}],
+  run(v){
+    const f=F(v.f), g=F(v.g), a=N(v.a), x0=N(v.x0);
+    const G=x=>integrate(f,a,g(x)), gx=g(x0), gp=deriv(g,x0);
+    const teo=f(gx)*gp, num=deriv(G,x0);
+    const rows=[['G(x₀) = ∫ₐ^g(x₀) f(t) dt',val(G(x0))],['g(x₀)',fmt(gx)],['g′(x₀)',fmt(gp)],['f(g(x₀))',fmt(f(gx))],['G′(x₀) por el teorema: f(g(x₀))·g′(x₀)',val(teo)],['G′(x₀) por derivada numérica de G',fmt(num)]];
+    rows[4].big=true;
+    const steps=[String.raw`G(x)=\int_{${fmt(a)}}^{g(x)} f(t)\,dt\;\Rightarrow\;G'(x)=f(g(x))\,g'(x)`,String.raw`G'(${fmt(x0)})=f(${fmt(gx)})\cdot ${fmt(gp)}=${fmt(f(gx))}\cdot ${fmt(gp)}=${fmt(teo)}`];
+    const lo=Math.min(a,gx), hi=Math.max(a,gx);
+    return {steps,rows,plot:{polys:hi>lo?bandFns(f,()=>0,lo,hi):[],curves:[curve(f,Math.min(lo,0)-.5,Math.max(hi,1)+.5,COL.blue,'f(t)')]}};
+  }});
+
+/* ---------- 6.1 Movimiento rectilíneo ---------- */
+mod({id:'mov',cap:6,sec:'6.1',title:'Movimiento rectilíneo',
+  desc:'A partir de v(t) (o de a(t) con condiciones iniciales) calcula desplazamiento, distancia recorrida, velocidad promedio y los instantes de reposo.',
+  tex:[String.raw`v(t)=s'(t),\quad a(t)=v'(t)`,String.raw`\Delta s=\int_a^b v(t)\,dt,\qquad D=\int_a^b |v(t)|\,dt`,String.raw`v_{prom}=\frac{\Delta s}{b-a}=\frac1{b-a}\int_a^b v\,dt,\qquad a_{prom}=\frac{\Delta v}{b-a}`],
+  fields:[{id:'k',label:'Dato conocido',type:'select',opts:[['v','Velocidad v(t)'],['a','Aceleración a(t) (polinomio)']],val:'v'},
+    {id:'f',label:'v(t)  ó  a(t)',val:'t^2 - 4t + 3'},{id:'v0',label:'v(0)  (solo si das a(t))',val:'0'},{id:'s0',label:'s(0) posición inicial',val:'0'},
+    {id:'a',label:'t inicial (a)',val:'0'},{id:'b',label:'t final (b)',val:'4'}],
+  run(v){
+    const a=N(v.a), b=N(v.b), s0=N(v.s0), v0=N(v.v0); ordered(a,b);
+    const steps=[]; let vf;
+    if(v.k==='a'){
+      const ast=parse(v.f), aSer=toSeries(ast);
+      const vSer=new Map(); for(const [e,c] of aSer){ if(Math.abs(e+1)<1e-12) throw new Error('a(t) con 1/t no es polinómica.'); vSer.set(key(e+1),c/(e+1)); } vSer.set(0,(vSer.get(0)||0)+v0);
+      const sSer=new Map(); for(const [e,c] of clean(vSer)){ if(Math.abs(e+1)<1e-12) throw new Error('No soportado.'); sSer.set(key(e+1),c/(e+1)); } sSer.set(0,(sSer.get(0)||0)+s0);
+      steps.push(String.raw`a(t)=${texSum(serTerms(aSer)).replace(/x/g,'t')}`,String.raw`v(t)=\int a\,dt=${texSum(serTerms(clean(vSer))).replace(/x/g,'t')}\quad(C_1=v(0)=${fmt(v0)})`,String.raw`s(t)=\int v\,dt=${texSum(serTerms(clean(sSer))).replace(/x/g,'t')}\quad(C_2=s(0)=${fmt(s0)})`);
+      vf=t=>evalSer(vSer,t);
+    } else vf=F(v.f);
+    const sf=t=>s0+integrate(vf,0,t);
+    const ds=integrate(vf,a,b), D=integrate(t=>Math.abs(vf(t)),a,b), z=roots(vf,a,b);
+    const rows=[['Desplazamiento Δs = s(b) − s(a)',val(ds)],['Distancia total D = ∫|v| dt',val(D)],['Velocidad promedio',val(ds/(b-a))],['Aceleración promedio (v(b) − v(a))/(b − a)',val((vf(b)-vf(a))/(b-a))],
+      ['s(a)',val(sf(a))],['s(b)',val(sf(b))],['v(a)  →  v(b)',fmt(vf(a))+'  →  '+fmt(vf(b))],['En reposo (v = 0) en t =',z.length?z.map(r=>fmt(r)).join(',  '):'ninguno en [a, b]']];
+    rows[0].big=true;
+    steps.push(String.raw`\Delta s=\int_{${fmt(a)}}^{${fmt(b)}} v\,dt=${fmt(ds)},\qquad D=\int_{${fmt(a)}}^{${fmt(b)}}|v|\,dt=${fmt(D)}`);
+    return {steps,rows,plot:{polys:bandFns(vf,()=>0,a,b),curves:[curve(vf,a,b,COL.blue,'v(t)')],points:z.map(r=>({x:r,y:0,label:'t='+fmt(r)}))},note:'Azul: v > 0 (avanza). Rojo: v < 0 (retrocede). Por eso D usa el valor absoluto.'};
+  }});
+
+/* ---------- 6.1b Aceleración constante ---------- */
+mod({id:'cte',cap:6,sec:'6.1',title:'Aceleración constante, caída libre y lanzamiento vertical',
+  desc:'Para a(t) = k. Caída libre y lanzamiento vertical: usa k = −9.8 m/s² (el signo negativo es hacia abajo).',
+  tex:[String.raw`v(t)=v_0+kt`,String.raw`s(t)=s_0+v_0t+\tfrac12kt^2`,String.raw`v^2=v_0^2+2k(s-s_0)`],
+  fields:[{id:'k',label:'k  aceleración (m/s²)',val:'-9.8'},{id:'v0',label:'v₀  velocidad inicial',val:'20'},{id:'s0',label:'s₀  posición inicial',val:'0'},{id:'t',label:'t  tiempo a evaluar',val:'3'}],
+  run(v){
+    const k=N(v.k), v0=N(v.v0), s0=N(v.s0), t=N(v.t);
+    if(t<0) throw new Error('t debe ser ≥ 0.');
+    const vt=v0+k*t, st=s0+v0*t+k*t*t/2, rows=[['v(t)',val(vt)],['s(t)',val(st)],['Comprobación v² = v₀² + 2k(s − s₀)',fmt(vt*vt)+' = '+fmt(v0*v0+2*k*(st-s0))]];
+    rows[0].big=true; rows[1].big=true;
+    let tr=null,tEnd=Math.max(t,1);
+    if(k!==0&&-v0/k>0){ tr=-v0/k; rows.push(['En reposo (v = 0) en t =',val(tr)],['Posición en ese instante (altura máxima)',val(s0+v0*tr+k*tr*tr/2)]); tEnd=Math.max(tEnd,tr*1.2); }
+    let th=null;
+    if(k!==0){ const disc=v0*v0-2*k*s0; if(disc>=0){ const c=[(-v0+Math.sqrt(disc))/k,(-v0-Math.sqrt(disc))/k].filter(r=>r>1e-9).sort((a,b)=>a-b); if(c.length){ th=c[0]; rows.push(['Llega a s = 0 en t =',val(th)],['Velocidad de impacto',val(v0+k*th)]); tEnd=Math.max(tEnd,th*1.1);} } }
+    const s=x=>s0+v0*x+k*x*x/2;
+    const pts=[{x:t,y:st,label:'t='+fmt(t),color:COL.red}]; if(tr!==null) pts.push({x:tr,y:s(tr),label:'reposo',color:COL.green});
+    return {steps:[String.raw`v(${fmt(t)})=${fmt(v0)}+(${fmt(k)})(${fmt(t)})=${fmt(vt)}`,String.raw`s(${fmt(t)})=${fmt(s0)}+(${fmt(v0)})(${fmt(t)})+\tfrac12(${fmt(k)})(${fmt(t)})^2=${fmt(st)}`],rows,plot:{curves:[curve(s,0,tEnd,COL.blue,'s(t)'),curve(x=>v0+k*x,0,tEnd,COL.amber,'v(t)')],points:pts}};
+  }});
+
+/* ---------- 6.2 Área ---------- */
+mod({id:'area',cap:6,sec:'6.2',title:'Área bajo una curva y entre curvas',
+  desc:'Elige el caso: bajo f, entre f (arriba) y g (abajo), o integrando respecto a y con x derecha y x izquierda. Calcula el área con signo y el área total (valor absoluto).',
+  tex:[String.raw`A=\int_a^b f(x)\,dx\qquad A=\int_a^b [f(x)-g(x)]\,dx`,String.raw`A=\int_c^d [x_{der}(y)-x_{izq}(y)]\,dy\qquad A_{total}=\int_a^b |f(x)|\,dx`],
+  fields:[{id:'m',label:'Caso',type:'select',opts:[['1','1. Bajo una curva'],['2','2. Entre dos curvas'],['3','3. Integrando respecto a y']],val:'1'},
+    {id:'f',label:'f  (superior / x derecha)',val:'4 - x^2'},{id:'g',label:'g  (inferior / x izquierda) — casos 2 y 3',val:'0'},
+    {id:'a',label:'a  (ó c si integras en y)',val:'-3'},{id:'b',label:'b  (ó d si integras en y)',val:'3'}],
+  run(v){
+    const f=F(v.f), g=v.m==='1'?(()=>0):F(v.g), a=N(v.a), b=N(v.b); ordered(a,b);
+    const sg=integrate(x=>f(x)-g(x),a,b), tot=integrate(x=>Math.abs(f(x)-g(x)),a,b), z=roots(x=>f(x)-g(x),a,b);
+    const sw=v.m==='3', iv=sw?'y':'x';
+    const rows=[[sw?'Área A = ∫ (x_der − x_izq) dy':'Área con signo ∫ (f − g)',val(sg)],['Área total ∫ |f − g|  (valor absoluto)',val(tot)],[(sw?'Cruces x_der = x_izq en y =':'Intersecciones f = g en x ='),z.length?z.map(r=>fmt(r)).join(',  '):'ninguna en el intervalo']];
+    rows[1].big=true;
+    const steps=[v.m==='1'?String.raw`A=\int_{${fmt(a)}}^{${fmt(b)}} f(x)\,dx=${fmt(sg)},\quad A_{total}=\int |f|\,dx=${fmt(tot)}`:
+      v.m==='2'?String.raw`A=\int_{${fmt(a)}}^{${fmt(b)}} [f(x)-g(x)]\,dx=${fmt(sg)}`:String.raw`A=\int_{${fmt(a)}}^{${fmt(b)}} [x_{der}(y)-x_{izq}(y)]\,dy=${fmt(sg)}`];
+    const polys=bandFns(f,g,a,b,sw), cv=[];
+    const sc=(fn,c,l)=>{ const o=curve(fn,a,b,c,l); if(sw) o.pts=o.pts.map(p=>p&&[p[1],p[0]]); return o; };
+    cv.push(sc(f,COL.red,sw?'x = f(y)':'f')); if(v.m!=='1') cv.push(sc(g,COL.blue,sw?'x = g(y)':'g'));
+    return {steps,rows,plot:{polys,curves:cv},note:'Azul: f arriba de g (aporta positivo). Rojo: g arriba de f (aporta negativo; el área total lo suma como positivo).'};
+  }});
+
+/* ---------- 6.3 Volúmenes: rebanadas ---------- */
+mod({id:'vol',cap:6,sec:'6.3',title:'Volúmenes de sólidos: método de rebanadas',
+  desc:'Discos (g = 0) y arandelas/anillos (g ≠ 0) al girar la región entre g y f alrededor de la recta y = k (k = 0 es el eje x). La región debe quedar de un solo lado del eje.',
+  tex:[String.raw`V=\pi\int_a^b [f(x)]^2\,dx\quad\text{(discos)}`,String.raw`V=\pi\int_a^b (R^2-r^2)\,dx\quad\text{(arandelas)}`],
+  fields:[{id:'f',label:'f(x)  (curva exterior)',val:'sqrt(x)'},{id:'g',label:'g(x)  (interior; 0 = discos)',val:'0'},{id:'a',label:'a',val:'0'},{id:'b',label:'b',val:'4'},{id:'k',label:'Eje de giro  y = k',val:'0'}],
+  run(v){
+    const f=F(v.f), g=F(v.g), a=N(v.a), b=N(v.b), k=N(v.k); ordered(a,b);
+    const R=x=>Math.max(Math.abs(f(x)-k),Math.abs(g(x)-k)), r=x=>Math.min(Math.abs(f(x)-k),Math.abs(g(x)-k));
+    const V=Math.PI*integrate(x=>R(x)**2-r(x)**2,a,b), disc=integrate(x=>Math.abs(r(x)),a,b)<1e-12;
+    const rows=[[disc?'Volumen V (método de discos)':'Volumen V (método de arandelas)',val(V)],['V / π',val(V/Math.PI)]]; rows[0].big=true;
+    const steps=[disc?String.raw`V=\pi\int_{${fmt(a)}}^{${fmt(b)}} [R(x)]^2\,dx=${val(V).replace(/π/,String.raw`\pi`)}`:String.raw`V=\pi\int_{${fmt(a)}}^{${fmt(b)}} (R^2-r^2)\,dx=${fmt(V)}`,String.raw`R=\max(|f-k|,|g-k|),\quad r=\min(|f-k|,|g-k|)`];
+    const mir=x=>2*k-f(x), mirg=x=>2*k-g(x);
+    return {steps,rows,plot:{polys:[...bandFns(f,g,a,b)],curves:[curve(f,a,b,COL.blue,'f'),curve(g,a,b,COL.green,'g'),curve(mir,a,b,COL.blue,null),curve(mirg,a,b,COL.green,null),curve(()=>k,a,b,COL.ink,'eje de giro')].map((c,i)=>{ if(i>=2&&i<4) c.dash=true; return c; })},
+      note:'La línea punteada es el reflejo: al girar, la región barre el sólido completo.'};
+  }});
+
+/* ---------- 6.4 Volúmenes: cascarones ---------- */
+mod({id:'cas',cap:6,sec:'6.4',title:'Volúmenes de sólidos: método de los cascarones',
+  desc:'Cascarones cilíndricos: V = 2π ∫ (radio)(altura). Gira alrededor de un eje vertical x = k (integra en x) o de un eje horizontal y = k (integra en y).',
+  tex:[String.raw`V=2\pi\int_a^b (\text{radio})(\text{altura})\,dx`,String.raw`\text{Eje }y:\;V=2\pi\int_a^b x\,[f(x)-g(x)]\,dx\qquad \text{Eje }x:\;V=2\pi\int_c^d y\,[f(y)-g(y)]\,dy`],
+  fields:[{id:'o',label:'Eje de giro',type:'select',opts:[['v','Vertical (eje y):  integra en x'],['h','Horizontal (eje x):  integra en y']],val:'v'},
+    {id:'f',label:'f  (curva superior / derecha)',val:'sqrt(x)'},{id:'g',label:'g  (curva inferior / izquierda)',val:'x^2'},{id:'a',label:'a  (ó c)',val:'0'},{id:'b',label:'b  (ó d)',val:'1'},{id:'k',label:'El eje es x = k  (ó y = k)',val:'0'}],
+  run(v){
+    const f=F(v.f), g=F(v.g), a=N(v.a), b=N(v.b), k=N(v.k); ordered(a,b);
+    const V=2*Math.PI*integrate(u=>Math.abs(u-k)*(f(u)-g(u)),a,b), sw=v.o==='h', iv=sw?'y':'x';
+    const rows=[['Volumen V',val(V)],['V / π',val(V/Math.PI)]]; rows[0].big=true;
+    const steps=[String.raw`V=2\pi\int_{${fmt(a)}}^{${fmt(b)}} |${iv}-${fmt(k)}|\,[f(${iv})-g(${iv})]\,d${iv}=${fmt(V)}`];
+    const sc=(fn,c,l)=>{ const o=curve(fn,a,b,c,l); if(sw) o.pts=o.pts.map(p=>p&&[p[1],p[0]]); return o; };
+    const axis=sw?{color:COL.ink,label:'eje de giro',pts:[[a,k],[b,k]].map(p=>[p[0],p[1]]).map(p=>[p[0],p[1]])}:{color:COL.ink,label:'eje de giro',pts:[[k,Math.min(...lin(a,b,60).map(f),...lin(a,b,60).map(g))],[k,Math.max(...lin(a,b,60).map(f),...lin(a,b,60).map(g))]]};
+    if(sw){ const xs=lin(a,b,60), vals=xs.map(f).concat(xs.map(g)).filter(Number.isFinite); axis.pts=[[Math.min(...vals),k],[Math.max(...vals),k]]; }
+    return {steps,rows,plot:{polys:bandFns(f,g,a,b,sw),curves:[sc(f,COL.blue,sw?'x = f(y)':'f(x)'),sc(g,COL.green,sw?'x = g(y)':'g(x)'),axis]}};
+  }});
+
+/* ---------- 6.5 Longitud de una gráfica ---------- */
+mod({id:'arc',cap:6,sec:'6.5',title:'Longitud de una gráfica',
+  desc:'Longitud de arco de y = f(x) en [a, b]. Muestra el valor preciso y la versión “programable” con diferencias finitas.',
+  tex:[String.raw`L=\int_a^b\sqrt{1+\big(f'(x)\big)^2}\,dx`,String.raw`L\approx\sum\sqrt{1+\left(\frac{f(x+dx)-f(x)}{dx}\right)^2}\,dx`],
+  fields:[{id:'f',label:'f(x)',val:'x^(3/2)'},{id:'a',label:'a',val:'0'},{id:'b',label:'b',val:'4'},{id:'n',label:'n (para la suma programable)',val:'1000'}],
+  run(v){
+    const f=F(v.f), a=N(v.a), b=N(v.b), n=Math.max(1,Math.round(N(v.n))); ordered(a,b);
+    const L=integrate(x=>Math.sqrt(1+deriv(f,x)**2),a,b), dx=(b-a)/n; let s=0; for(let i=0;i<n;i++){ const x=a+i*dx; s+=Math.sqrt(1+((f(x+dx)-f(x))/dx)**2)*dx; }
+    const rows=[['Longitud L (integral)',val(L)],['L con la suma programable (n = '+n+')',val(s)],['Diferencia',fmt(Math.abs(L-s))],['Distancia en línea recta entre extremos',fmt(Math.hypot(b-a,f(b)-f(a)))]]; rows[0].big=true;
+    return {steps:[String.raw`L=\int_{${fmt(a)}}^{${fmt(b)}}\sqrt{1+(f'(x))^2}\,dx=${fmt(L)}`],rows,plot:{curves:[curve(f,a,b,COL.blue,'y = f(x)')],points:[{x:a,y:f(a),color:COL.green},{x:b,y:f(b),color:COL.green}]}};
+  }});
+
+/* ---------- 6.6 Superficie de revolución ---------- */
+mod({id:'sup',cap:6,sec:'6.6',title:'Área de una superficie de revolución',
+  desc:'Área lateral de la superficie que genera y = f(x) al girar alrededor del eje x o del eje y.',
+  tex:[String.raw`S=2\pi\int_a^b f(x)\sqrt{1+(f'(x))^2}\,dx\quad(\text{eje }X)`,String.raw`S=2\pi\int_a^b x\sqrt{1+(f'(x))^2}\,dx\quad(\text{eje }Y)`],
+  fields:[{id:'e',label:'Gira alrededor del',type:'select',opts:[['x','Eje X'],['y','Eje Y']],val:'x'},{id:'f',label:'f(x)',val:'x'},{id:'a',label:'a',val:'0'},{id:'b',label:'b',val:'2'},{id:'n',label:'n (suma programable)',val:'1000'}],
+  run(v){
+    const f=F(v.f), a=N(v.a), b=N(v.b), n=Math.max(1,Math.round(N(v.n))); ordered(a,b);
+    const rad=v.e==='x'?(x=>Math.abs(f(x))):(x=>Math.abs(x));
+    const S=2*Math.PI*integrate(x=>rad(x)*Math.sqrt(1+deriv(f,x)**2),a,b), dx=(b-a)/n; let s=0; for(let i=0;i<n;i++){ const x=a+i*dx; s+=rad(x)*Math.sqrt(1+((f(x+dx)-f(x))/dx)**2)*dx; } s*=2*Math.PI;
+    const rows=[['Área de la superficie S',val(S)],['S con la suma programable (n = '+n+')',val(s)],['S / π',val(S/Math.PI)]]; rows[0].big=true;
+    const sw=v.e==='y';
+    const mir=curve(sw?x=>f(x):x=>-f(x),a,b,COL.blue,null); mir.dash=true; if(sw) mir.pts=mir.pts.map(p=>p&&[-p[0],p[1]]);
+    return {steps:[String.raw`S=2\pi\int_{${fmt(a)}}^{${fmt(b)}} ${v.e==='x'?'f(x)':'x'}\sqrt{1+(f'(x))^2}\,dx=${fmt(S)}`],rows,plot:{curves:[curve(f,a,b,COL.blue,'y = f(x)'),mir]},note:'La curva punteada es su reflejo respecto al eje de giro.'};
+  }});
+
+/* ---------- 6.7 Valor medio ---------- */
+mod({id:'prom',cap:6,sec:'6.7',title:'Valor medio (promedio) de una función',
+  desc:'Valor promedio de f en [a, b] y los puntos c donde f(c) es igual a ese promedio (teorema del valor medio para integrales).',
+  tex:[String.raw`f_{prom}=\frac{1}{b-a}\int_a^b f(x)\,dx`,String.raw`f(c)=f_{prom}`],
+  fields:[{id:'f',label:'f(x)',val:'x^2'},{id:'a',label:'a',val:'0'},{id:'b',label:'b',val:'3'}],
+  run(v){
+    const f=F(v.f), a=N(v.a), b=N(v.b); ordered(a,b);
+    const I=integrate(f,a,b), p=I/(b-a), cs=roots(x=>f(x)-p,a,b);
+    const rows=[['f promedio',val(p)],['∫ f dx',val(I)],['Valores de c con f(c) = f_prom',cs.length?cs.map(fmt).join(',  '):'ninguno']]; rows[0].big=true;
+    return {steps:[String.raw`f_{prom}=\frac{1}{${fmt(b)}-${fmt(a)}}\int_{${fmt(a)}}^{${fmt(b)}}f\,dx=\frac{${fmt(I)}}{${fmt(b-a)}}=${fmt(p)}`],rows,
+      plot:{polys:bandFns(()=>p,()=>0,a,b).map(q=>({...q,color:FILL.amb})),curves:[curve(f,a,b,COL.blue,'f(x)'),curve(()=>p,a,b,COL.amber,'f promedio')],points:cs.map(c=>({x:c,y:p,label:'c='+fmt(c),color:COL.red}))},
+      note:'El rectángulo naranja tiene el mismo área que la región bajo la curva.'};
+  }});
+
+/* ---------- 6.8 Trabajo ---------- */
+mod({id:'trab',cap:6,sec:'6.8',title:'Trabajo',
+  desc:'Trabajo de una fuerza variable (por ejemplo un resorte F = kx) o trabajo para bombear un líquido (área de la capa A(y) y distancia d(y) que debe subir).',
+  tex:[String.raw`W=\int_a^b F(x)\,dx`,String.raw`W=\rho g\int_a^b A(y)\,d(y)\,dy\quad(\text{bombeo})`],
+  fields:[{id:'m',label:'Tipo',type:'select',opts:[['f','Fuerza variable F(x)'],['b','Bombeo de líquido']],val:'f'},
+    {id:'f',label:'F(x)  ó  A(y)',val:'20x'},{id:'d',label:'d(y) distancia (solo bombeo)',val:'5 - y'},{id:'r',label:'ρ densidad (kg/m³)',val:'1000'},{id:'a',label:'a',val:'0'},{id:'b',label:'b',val:'0.5'}],
+  run(v){
+    const a=N(v.a), b=N(v.b); ordered(a,b);
+    let h,W,steps,rows;
+    if(v.m==='f'){ h=F(v.f); W=integrate(h,a,b); steps=[String.raw`W=\int_{${fmt(a)}}^{${fmt(b)}}F(x)\,dx=${fmt(W)}\ \text{J}`]; rows=[['Trabajo W (joules, si F en N y x en m)',val(W)]]; }
+    else{ const A=F(v.f), dd=F(v.d), rho=N(v.r), g=9.8; h=y=>rho*g*A(y)*dd(y); W=integrate(h,a,b); steps=[String.raw`W=\rho g\int_{${fmt(a)}}^{${fmt(b)}}A(y)\,d(y)\,dy,\quad \rho g=${fmt(rho*g)}`,String.raw`W=${fmt(W)}\ \text{J}`]; rows=[['Trabajo W (joules)',val(W)],['Integral sin ρg',val(W/(rho*g))]]; }
+    rows[0].big=true;
+    return {steps,rows,plot:{polys:bandFns(h,()=>0,a,b),curves:[curve(h,a,b,COL.blue,v.m==='f'?'F(x)':'ρg·A(y)·d(y)')]},note:'El trabajo es el área bajo la curva de la fuerza.'};
+  }});
+
+/* ---------- 6.9 Presión y fuerza del fluido ---------- */
+mod({id:'pres',cap:6,sec:'6.9',title:'Presión y fuerza del fluido',
+  desc:'Fuerza sobre una placa sumergida verticalmente. y es la profundidad medida desde la superficie; w(y) es el ancho de la placa a esa profundidad.',
+  tex:[String.raw`p=\rho g h`,String.raw`F=\rho g\int_c^d h(y)\,w(y)\,dy`],
+  fields:[{id:'r',label:'ρ densidad (kg/m³)',val:'1000'},{id:'h',label:'h(y)  profundidad',val:'y'},{id:'w',label:'w(y)  ancho',val:'2'},{id:'c',label:'c  (y inicial)',val:'1'},{id:'d',label:'d  (y final)',val:'3'}],
+  run(v){
+    const rho=N(v.r), h=F(v.h), w=F(v.w), c=N(v.c), d=N(v.d), g=9.8; ordered(c,d);
+    const I=integrate(y=>h(y)*w(y),c,d), Fz=rho*g*I;
+    const rows=[['Fuerza F (newtons)',val(Fz)],['∫ h(y) w(y) dy',val(I)],['Presión a profundidad d: ρ g h(d) (Pa)',val(rho*g*h(d))]]; rows[0].big=true;
+    return {steps:[String.raw`F=\rho g\int_{${fmt(c)}}^{${fmt(d)}} h(y)w(y)\,dy=${fmt(rho*g)}\cdot${fmt(I)}=${fmt(Fz)}\ \text{N}`],rows,
+      plot:{polys:bandFns(y=>h(y)*w(y),()=>0,c,d),curves:[curve(y=>h(y)*w(y),c,d,COL.blue,'h(y)·w(y)')]}};
+  }});
+
+/* ---------- 6.10 Centros de masa ---------- */
+mod({id:'cm',cap:6,sec:'6.10',title:'Centros de masa y centroides',
+  desc:'Centroide de la región entre g(x) (abajo) y f(x) (arriba), con densidad uniforme.',
+  tex:[String.raw`A=\int_a^b [f-g]\,dx`,String.raw`\bar x=\frac1A\int_a^b x\,[f-g]\,dx,\qquad \bar y=\frac1A\int_a^b \tfrac12\,[f^2-g^2]\,dx`],
+  fields:[{id:'f',label:'f(x)  (superior)',val:'x'},{id:'g',label:'g(x)  (inferior)',val:'x^2'},{id:'a',label:'a',val:'0'},{id:'b',label:'b',val:'1'}],
+  run(v){
+    const f=F(v.f), g=F(v.g), a=N(v.a), b=N(v.b); ordered(a,b);
+    const A=integrate(x=>f(x)-g(x),a,b), My=integrate(x=>x*(f(x)-g(x)),a,b), Mx=integrate(x=>.5*(f(x)**2-g(x)**2),a,b);
+    if(Math.abs(A)<1e-12) throw new Error('El área es 0: no hay centroide.');
+    const xb=My/A, yb=Mx/A;
+    const rows=[['Centroide (x̄, ȳ)','('+val(xb).trim()+',  '+val(yb).trim()+')'],['Área A',val(A)],['Momento My = ∫ x (f − g) dx',val(My)],['Momento Mx = ∫ ½ (f² − g²) dx',val(Mx)]]; rows[0].big=true;
+    return {steps:[String.raw`\bar x=\frac{${fmt(My)}}{${fmt(A)}}=${fmt(xb)},\qquad \bar y=\frac{${fmt(Mx)}}{${fmt(A)}}=${fmt(yb)}`],rows,
+      plot:{polys:bandFns(f,g,a,b),curves:[curve(f,a,b,COL.red,'f'),curve(g,a,b,COL.blue,'g')],points:[{x:xb,y:yb,label:'centroide',color:COL.ink}]}};
+  }});
+
+/* ---------- 7.1 Integración: tres recursos ---------- */
+mod({id:'rec',cap:7,sec:'7.1',title:'Integración: tres recursos',
+  desc:'Compara tres recursos para calcular una integral definida: la fórmula exacta (antiderivada), la regla del trapecio y la regla de Simpson.',
+  tex:[String.raw`\int_a^b f\,dx=F(b)-F(a)`,String.raw`T_n=\frac{\Delta x}{2}\big[f(x_0)+2f(x_1)+\dots+f(x_n)\big]`,String.raw`S_n=\frac{\Delta x}{3}\big[f(x_0)+4f(x_1)+2f(x_2)+\dots+f(x_n)\big]`],
+  fields:[{id:'f',label:'f(x)',val:'sin(x) + x^2'},{id:'a',label:'a',val:'0'},{id:'b',label:'b',val:'3'},{id:'n',label:'n (subintervalos)',val:'6'}],
+  run(v){
+    const f=F(v.f), a=N(v.a), b=N(v.b), n=Math.max(2,Math.round(N(v.n))); ordered(a,b);
+    const ref=integrate(f,a,b), T=riemann(f,a,b,n,'trap'), S=riemann(f,a,b,n,'simpson'), dx=(b-a)/n;
+    let ex=null; try{ const I=integrateExpr(parse(v.f)); ex=I.F(b)-I.F(a); }catch(e){ if(!/Esta función|NOSERIES/.test(e.message)&&!e.nos) throw e; }
+    const rows=[['Valor de referencia (Simpson adaptativo)',val(ref)],
+      ['Recurso 1: fórmula exacta F(b) − F(a)',ex===null?'no disponible para esta función':val(ex)],
+      ['Recurso 2: trapecio (n = '+n+')',val(T)],['   error del trapecio',fmt(Math.abs(T-ref))],
+      ['Recurso 3: Simpson (n = '+(n%2?n+1:n)+')',val(S)],['   error de Simpson',fmt(Math.abs(S-ref))]];
+    rows[0].big=true;
+    const steps=[String.raw`\Delta x=\frac{${fmt(b)}-${fmt(a)}}{${n}}=${fmt(dx)}`,String.raw`T_n=${fmt(T)},\qquad S_n=${fmt(S)}`];
+    const polys=[];
+    if(n<=60) for(let i=0;i<n;i++){ const x=a+i*dx; polys.push({pts:[[x,0],[x,f(x)],[x+dx,f(x+dx)],[x+dx,0]],color:FILL.amb,stroke:COL.amber}); }
+    else polys.push(...bandFns(f,()=>0,a,b));
+    return {steps,rows,plot:{polys,curves:[curve(f,a,b,COL.blue,'f(x)')]},note:'Los trapecios naranjas son la aproximación. Sube n y mira cómo el error de Simpson cae mucho más rápido.'};
+  }});
+
+/* ---------- 7.2 Integración por sustitución ---------- */
+mod({id:'sust',cap:7,sec:'7.2',title:'Integración por sustitución',
+  desc:'Resuelve ∫ f(g(x))·g′(x) dx con u = g(x). Escribe la función externa f en términos de u y la interna g en términos de x. Comprueba que ambas integrales coinciden con los nuevos límites.',
+  tex:[String.raw`u=g(x),\quad du=g'(x)\,dx`,String.raw`\int_a^b f(g(x))\,g'(x)\,dx=\int_{g(a)}^{g(b)} f(u)\,du`],
+  fields:[{id:'f',label:'f(u)  (función externa, usa u)',val:'sqrt(u)'},{id:'g',label:'g(x)  (u = g(x))',val:'x^2 + 1'},{id:'a',label:'a',val:'0'},{id:'b',label:'b',val:'2'}],
+  run(v){
+    const ff=F(v.f), g=F(v.g), a=N(v.a), b=N(v.b); ordered(a,b);
+    const gp=x=>deriv(g,x), ua=g(a), ub=g(b);
+    const Ix=integrate(x=>ff(g(x))*gp(x),a,b), Iu=integrate(ff,ua,ub);
+    const rows=[['Integral en x:  f(g(x))·g′(x)',val(Ix)],['Integral en u:  f(u) de g(a) a g(b)',val(Iu)],['Nuevos límites en u',fmt(ua)+'  →  '+fmt(ub)],['Diferencia entre ambas',fmt(Math.abs(Ix-Iu))]];
+    rows[0].big=true;
+    const steps=[String.raw`u=g(x),\quad du=g'(x)\,dx`,String.raw`x=${fmt(a)}\Rightarrow u=${fmt(ua)},\qquad x=${fmt(b)}\Rightarrow u=${fmt(ub)}`];
+    try{ const I=integrateExpr(parse(v.f)); steps.push(String.raw`\int f(u)\,du=${I.tex.replace(/x/g,'u')}+C`); }catch(e){ if(!/Esta función|NOSERIES/.test(e.message)&&!e.nos) throw e; }
+    steps.push(String.raw`\int_{${fmt(ua)}}^{${fmt(ub)}} f(u)\,du=${fmt(Iu)}`);
+    const lo=Math.min(ua,ub), hi=Math.max(ua,ub), fx=x=>ff(g(x))*gp(x), cu=curve(ff,lo,hi,COL.amber,'f(u)  (en u)'); cu.dash=true;
+    return {steps,rows,plot:{polys:[...bandFns(fx,()=>0,a,b),...bandFns(ff,()=>0,lo,hi).map(q=>({...q,color:FILL.amb}))],curves:[curve(fx,a,b,COL.blue,'f(g(x))·g′(x)  (en x)'),cu]},
+      note:'El área azul (en x) y el área naranja (en u) son iguales: la sustitución solo cambia la forma de medirla. Si tu integral trae x en lugar de 2x, multiplica el resultado por 1/2.'};
+  }});
+
+/* ---------- 7.3 Integración por partes ---------- */
+mod({id:'partes',cap:7,sec:'7.3',title:'Integración por partes',
+  desc:'∫ u dv = uv − ∫ v du, resuelta con el método tabular para p(x)·eᵏˣ, p(x)·sen(kx), p(x)·cos(kx) y x^n·ln x.',
+  tex:[String.raw`\int u\,dv=uv-\int v\,du`,String.raw`\int p(x)\,g(x)\,dx=\sum_{i\ge0}(-1)^i\,p^{(i)}(x)\,G_{i+1}(x)`],
+  fields:[{id:'p',label:'p(x)  (polinomio, ó x^n si es ln x)',val:'x'},{id:'t',label:'Función',type:'select',opts:[['e','e^(kx)'],['s','sen(kx)'],['c','cos(kx)'],['l','ln(x)']],val:'e'},{id:'k',label:'k',val:'1'},{id:'a',label:'a (opcional)',val:'0'},{id:'b',label:'b (opcional)',val:'1'}],
+  run(v){
+    const ps=toSeries(parse(v.p)), k=N(v.k); let Fn, ftex, ptex=texSum(serTerms(ps));
+    if(v.t==='l'){
+      const terms=[]; const lnTerm=[];
+      for(const [e,c] of ps){ if(Math.abs(e+1)<1e-12) lnTerm.push(c); else{ terms.push({c:c/(e+1),body:bodyX(e+1)+String.raw`\ln x`}); terms.push({c:-c/((e+1)**2),body:bodyX(e+1)}); } }
+      const lt=lnTerm.reduce((s,c)=>s+c,0); if(lt) terms.push({c:lt/2,body:String.raw`(\ln x)^2`});
+      Fn=x=>{ let s=0; for(const [e,c] of ps){ if(Math.abs(e+1)<1e-12) s+=c*Math.log(x)**2/2; else s+=c/(e+1)*Math.pow(x,e+1)*Math.log(x)-c/((e+1)**2)*Math.pow(x,e+1); } return s; };
+      ftex=texSum(terms);
+    } else {
+      if(Math.abs(k)<1e-12) throw new Error('k no puede ser 0.');
+      for(const e of ps.keys()) if(e<0||!Number.isInteger(e)) throw new Error('p(x) debe ser un polinomio (potencias enteras ≥ 0).');
+      let deg=Math.max(...ps.keys()), P=[]; for(let i=0;i<=deg;i++) P[i]=ps.get(i)||0;
+      const out={e:[],s:[],c:[]}; const addc=(arr,i,c)=>{ arr[i]=(arr[i]||0)+c; };
+      let cur=P.slice();
+      for(let i=0;i<=deg;i++){
+        const sgn=i%2?-1:1, j=i+1, kj=Math.pow(k,j);
+        cur.forEach((c,pw)=>{ if(!c) return;
+          if(v.t==='e') addc(out.e,pw,sgn*c/kj);
+          else if(v.t==='s'){ const r=j%4; // 1:-cos 2:-sin 3:+cos 0:+sin
+            if(r===1) addc(out.c,pw,-sgn*c/kj); else if(r===2) addc(out.s,pw,-sgn*c/kj); else if(r===3) addc(out.c,pw,sgn*c/kj); else addc(out.s,pw,sgn*c/kj); }
+          else { const r=j%4; // 1:+sin 2:-cos 3:-sin 0:+cos
+            if(r===1) addc(out.s,pw,sgn*c/kj); else if(r===2) addc(out.c,pw,-sgn*c/kj); else if(r===3) addc(out.s,pw,-sgn*c/kj); else addc(out.c,pw,sgn*c/kj); } });
+        cur=cur.slice(1).map((c,pw)=>c*(pw+1)); // derivada
+      }
+      const polyT=arr=>arr.map((c,i)=>({c:c||0,body:bodyX(i)})).reverse().filter(t=>Math.abs(t.c)>1e-12);
+      const arg=texSum([{c:k,body:'x'}]), parts=[];
+      const wrap=(arr,f)=>{ const t=polyT(arr); if(!t.length) return; const s=texSum(t); parts.push({raw:t.length>1?String.raw`\left(${s}\right)${f}`:(t[0].c<0?'-':'')+(Math.abs(Math.abs(t[0].c)-1)<1e-12&&t[0].body?'':texN(Math.abs(t[0].c)))+t[0].body+f}); };
+      wrap(out.e,String.raw`e^{${arg}}`); wrap(out.s,String.raw`\sin(${arg})`); wrap(out.c,String.raw`\cos(${arg})`);
+      ftex=parts.map((p,i)=>i&&!/^-/.test(p.raw)?'+ '+p.raw:p.raw).join(' ')||'0';
+      const ev=(arr,x)=>arr.reduce((s,c,i)=>s+(c||0)*Math.pow(x,i),0);
+      Fn=x=>ev(out.e,x)*Math.exp(k*x)+ev(out.s,x)*Math.sin(k*x)+ev(out.c,x)*Math.cos(k*x);
+    }
+    const gT={e:String.raw`e^{${texN(k)}x}`,s:String.raw`\sin(${texN(k)}x)`,c:String.raw`\cos(${texN(k)}x)`,l:String.raw`\ln x`}[v.t];
+    const gf={e:x=>Math.exp(k*x),s:x=>Math.sin(k*x),c:x=>Math.cos(k*x),l:x=>Math.log(x)}[v.t];
+    const pf=build(parse(v.p)), f=x=>pf(x)*gf(x);
+    const steps=[String.raw`\int (${ptex})\,${gT}\,dx`, String.raw`=${ftex}+C`], rows=[checkRow(Fn,f,v.t==='l'?1.9:.83)]; let plot=null;
+    if(v.a.trim()&&v.b.trim()){ const a=N(v.a), b=N(v.b); ordered(a,b);
+      rows.unshift(['∫ de a hasta b',val(Fn(b)-Fn(a))]); rows[0].big=true; rows.push(['Comprobación numérica (Simpson)',fmt(integrate(f,a,b))]);
+      plot={polys:bandFns(f,()=>0,a,b),curves:[curve(f,a,b,COL.blue,'p(x)·g(x)')]}; }
+    return {steps,rows,plot,note:v.t==='l'?'Para ln x toma u = ln x, dv = x^n dx.':'Método tabular: deriva p(x) hasta 0 e integra g(x) repetidamente, alternando signos.'};
+  }});
+
+/* =====================================================================
+   7. INTERFAZ Y JUEGO
+   ===================================================================== */
+const nav=document.getElementById('nav'), main=document.getElementById('main');
+const CAPS={5:'Mundo 5 · Integrales',6:'Mundo 6 · Aplicaciones',7:'Mundo 7 · Técnicas'};
+const MISSION={
+  indef:'Encuentra la función original de f(x) y, si pones a y b, mide el área acumulada.',
+  usub:'Cambia de variable para domar integrales de la forma x·(x − c)ⁿ.',
+  prob:'Cubre el área con rectángulos y descubre qué tan cerca llegas al valor exacto.',
+  def:'Divide la región en c, combina funciones y comprueba las propiedades de la integral definida.',
+  tfc:'Mueve el límite superior y comprueba que la derivada del área es la propia función.',
+  mov:'Sigue a un móvil: ¿cuánto se desplaza, cuánto recorre y cuándo se detiene?',
+  cte:'Lanza, suelta o frena objetos con aceleración constante y mira su altura y velocidad.',
+  area:'Mide regiones bajo una curva o atrapadas entre dos curvas.',
+  vol:'Gira una región y calcula el volumen del sólido (discos y arandelas).',
+  cas:'Envuelve el sólido con cascarones cilíndricos y obtén su volumen.',
+  arc:'Estira un hilo sobre la curva y mide cuánto mide realmente.',
+  sup:'Gira la curva y calcula la piel exterior del sólido.',
+  prom:'Encuentra la altura que iguala el área de la curva y dónde ocurre.',
+  trab:'Calcula el esfuerzo de una fuerza variable o de bombear un líquido.',
+  pres:'Sumerge una placa y calcula la fuerza que el agua ejerce sobre ella.',
+  cm:'Encuentra el punto de equilibrio (centroide) de una región.',
+  rec:'Compara la fórmula exacta con las reglas del trapecio y de Simpson y mide el error de cada una.',
+  sust:'Cambia de variable con u = g(x), actualiza los límites y comprueba que el área no cambia.',
+  partes:'Rompe productos difíciles con el método tabular.'
+};
+let current=null, timer=null, animateNext=true;
+
+let G={xp:0,done:{},wins:0,badges:{},challenge:false};
+try{ const sv=JSON.parse(localStorage.getItem('umg_game')||'null'); if(sv) G=Object.assign(G,sv); }catch(e){}
+const saveG=()=>{ try{ localStorage.setItem('umg_game',JSON.stringify(G)); }catch(e){} };
+const level=()=>Math.floor(G.xp/100)+1;
+const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function toast(msg){ const box=document.getElementById('toasts'), d=document.createElement('div'); d.className='toast'; d.textContent=msg; box.appendChild(d); setTimeout(()=>d.classList.add('out'),2600); setTimeout(()=>d.remove(),3300); }
+const BADGES=[
+  ['EXP','Explorador','Completa 5 misiones',()=>Object.keys(G.done).length>=5],
+  ['TIRO','Francotirador','Acierta 3 retos',()=>G.wins>=3],
+  ['N5','Nivel 5','Llega al nivel 5',()=>level()>=5],
+  ['M6','Mundo 6','Completa 5 misiones del Mundo 6',()=>MODULES.filter(m=>m.cap===6&&G.done[m.id]).length>=5],
+  ['TOP','Maestro del cálculo','Completa todas las misiones',()=>Object.keys(G.done).length>=MODULES.length]
+];
+function checkBadges(){ BADGES.forEach(b=>{ if(!G.badges[b[1]]&&b[3]()){ G.badges[b[1]]=1; toast('¡Logro desbloqueado: '+b[1]+'!'); } }); }
+function hud(){
+  document.getElementById('lvl').textContent=level();
+  const p=G.xp%100; document.getElementById('xpfill').style.width=p+'%'; document.getElementById('xptxt').textContent=p+' / 100 XP';
+  document.getElementById('badges').innerHTML=BADGES.map(b=>'<span class="bd'+(G.badges[b[1]]?' on':'')+'" title="'+b[1]+': '+b[2]+'">'+b[0]+'</span>').join('');
+  nav.querySelectorAll('button').forEach(btn=>btn.classList.toggle('done',!!G.done[btn.dataset.id]));
+  document.getElementById('prog').textContent=Object.keys(G.done).length+' / '+MODULES.length+' misiones';
+}
+function addXP(n,why){ const b=level(); G.xp+=n; toast('+'+n+' XP · '+why); if(level()>b) toast('¡Subiste al nivel '+level()+'!'); checkBadges(); hud(); saveG(); }
+
+const logoImg=document.getElementById('logoImg'), logoHint=document.getElementById('logoHint'), logoFile=document.getElementById('logoFile');
+function setLogo(src){ logoImg.src=src; logoImg.hidden=false; logoHint.hidden=true; }
+try{ const sl=localStorage.getItem('umg_logo'); if(sl) setLogo(sl); }catch(e){}
+logoFile.addEventListener('change',()=>{ const f=logoFile.files[0]; if(!f) return; const rd=new FileReader();
+  rd.onload=()=>{ setLogo(rd.result); try{ localStorage.setItem('umg_logo',rd.result); }catch(e){} toast('Logo cargado'); }; rd.readAsDataURL(f); });
+
+function animatePlot(cv,spec){
+  const t0=performance.now(); spec.reveal=0;
+  (function step(t){ const p=Math.min(1,(t-t0)/800); spec.reveal=1-Math.pow(1-p,3);
+    if(!document.body.contains(cv)) return; drawPlot(cv,spec); if(p<1) requestAnimationFrame(step); else spec.reveal=1; })(t0);
+}
+
+function buildNav(){
+  let last=0;
+  const pr=document.createElement('p'); pr.className='prog'; pr.textContent='Elige tu misión'; nav.appendChild(pr);
+  MODULES.forEach(m=>{
+    if(m.cap!==last){ const h=document.createElement('h2'); h.textContent=CAPS[m.cap]; nav.appendChild(h); last=m.cap; }
+    const b=document.createElement('button'); b.dataset.id=m.id;
+    b.innerHTML='<b>'+m.sec.split(' ')[0]+'</b><span class="t">'+m.title+'</span><i class="st"></i>';
+    b.onclick=()=>show(m.id); nav.appendChild(b);
+  });
+}
+
+function show(id){
+  current=MODULES.find(m=>m.id===id); animateNext=true;
+  nav.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.id===id));
+  try{ history.replaceState(null,'','#'+id); }catch(e){}
+  const m=current;
+  main.innerHTML=`
+    <section class="card">
+      <div class="sec">MISIÓN ${esc(m.sec)}</div><h2>${esc(m.title)}</h2><p class="desc">${esc(MISSION[m.id]||m.desc)}</p>
+      <div class="fields" id="fields"></div>
+      <div class="actions"><button class="btn p" id="go">Lanzar</button><button class="btn s" id="reset">Reiniciar</button></div>
+      <p class="help">Puedes escribir <code>x^2</code>, <code>2x</code>, <code>sqrt(x)</code>, <code>sin(x)</code>, <code>e^x</code>, <code>ln(x)</code>, <code>pi</code>. Los campos numéricos tienen deslizador: arrástralo y mira cómo cambia la gráfica.</p>
+    </section>
+    <section class="card" id="out"></section>`;
+  const fl=document.getElementById('fields');
+  m.fields.forEach(f=>{
+    const w=document.createElement('div'); const l=document.createElement('label'); l.textContent=f.label; l.htmlFor='f_'+f.id; w.appendChild(l);
+    let el, rg=null;
+    if(f.type==='select'){ el=document.createElement('select'); f.opts.forEach(([v,t])=>{ const o=document.createElement('option'); o.value=v; o.textContent=t; el.appendChild(o); }); el.value=f.val; }
+    else{
+      el=document.createElement('input'); el.type='text'; el.value=f.val; el.autocomplete='off'; el.spellcheck=false;
+      if(/^-?\d+(\.\d+)?$/.test(f.val.trim())){
+        const v0=parseFloat(f.val), span=Math.max(10,Math.ceil(Math.abs(v0)*2));
+        rg=document.createElement('input'); rg.type='range'; rg.min=(f.id==='n')?1:-span; rg.max=span; rg.step=(Math.abs(v0)<=20&&f.id!=='n')?0.1:1; rg.value=v0;
+        rg.addEventListener('input',()=>{ el.value=rg.value; clearTimeout(timer); timer=setTimeout(calc,60); });
+        el.addEventListener('input',()=>{ if(/^-?\d+(\.\d+)?$/.test(el.value.trim())) rg.value=el.value; });
+      }
+    }
+    el.id='f_'+f.id; el.addEventListener('input',()=>{ clearTimeout(timer); timer=setTimeout(calc,250); }); el.addEventListener('change',calc);
+    el.addEventListener('keydown',e=>{ if(e.key==='Enter'){ animateNext=true; calc(); } });
+    w.appendChild(el); if(rg) w.appendChild(rg); fl.appendChild(w);
+  });
+  document.getElementById('go').onclick=()=>{ animateNext=true; calc(); };
+  document.getElementById('reset').onclick=()=>show(id);
+  calc();
+}
+
+function calc(){
+  const m=current, out=document.getElementById('out'); if(!m||!out) return;
+  const v={}; m.fields.forEach(f=>{ v[f.id]=document.getElementById('f_'+f.id).value; });
+  let r;
+  try{ r=m.run(v); }
+  catch(e){ const msg=e.nos||e.message==='NOSERIES'?'Esta función no se puede integrar simbólicamente aquí (solo polinomios, potencias, sin, cos, e^x).':e.message;
+    out.innerHTML='<div class="err">'+esc(msg)+'</div>'; return; }
+  if(!G.done[m.id]){ G.done[m.id]=1; addXP(20,'¡Misión '+m.sec+' completada!'); }
+  const prim=r.rows.find(x=>x.big)||r.rows[0], rest=r.rows.filter(x=>x!==prim);
+  const target=parseFloat(String(prim[1]).replace(',','.')), chal=G.challenge&&Number.isFinite(target);
+  out.innerHTML=`<div class="res-grid"><div>
+      <div class="score"><span>${esc(prim[0])}</span><b id="scoreval">${chal?'???':esc(prim[1])}</b></div>
+      <div id="chal"></div>
+      <table class="rows${chal?' locked':''}" id="rows"></table>
+      <details class="steps${chal?' locked':''}" id="stepbox"><summary>Ver procedimiento</summary><div id="steps"></div></details>
+      ${r.note?'<p class="note">'+esc(r.note)+'</p>':''}
+    </div><div>${r.plot?'<div class="plotbox"><canvas id="cv"></canvas></div>':'<p class="note">Completa los datos para ver la gráfica.</p>'}</div></div>`;
+  const tb=document.getElementById('rows');
+  rest.forEach(row=>{ const tr=document.createElement('tr'); const a=document.createElement('td'), b=document.createElement('td'); a.textContent=row[0]; b.textContent=row[1]; tr.append(a,b); tb.appendChild(tr); });
+  const st=document.getElementById('steps'); r.steps.forEach(s=>{ const d=document.createElement('div'); st.appendChild(d); tex(d,s,true); });
+  if(r.plot){ const cv=document.getElementById('cv'); if(animateNext) animatePlot(cv,r.plot); else drawPlot(cv,r.plot); animateNext=false; }
+  if(chal){
+    const c=document.getElementById('chal');
+    c.innerHTML='<div class="chal"><div><b>MODO RETO</b>: adivina el resultado (±1 %). Puedes escribir cosas como <code>pi/2</code>.</div><div class="grow"><input id="guess" placeholder="Tu respuesta…" autocomplete="off"><button class="btn p" id="shoot">Disparar</button><button class="btn s" id="giveup">Rendirse</button></div><div class="fb" id="fb"></div></div>';
+    const reveal=win=>{ document.getElementById('scoreval').textContent=prim[1]; tb.classList.remove('locked'); document.getElementById('stepbox').classList.remove('locked');
+      c.innerHTML=win?'<div class="win">¡Impacto directo!</div>':'<div class="lose">Respuesta revelada. ¡Inténtalo con otra misión!</div>'; };
+    const shoot=()=>{ const fb=document.getElementById('fb'); let g;
+      try{ g=N(document.getElementById('guess').value); }catch(e){ fb.textContent='Escribe un número válido.'; return; }
+      if(Math.abs(g-target)<=Math.max(1e-6,Math.abs(target)*0.01)){ G.wins++; reveal(true); addXP(30,'¡Reto acertado!'); }
+      else{ const q=Math.abs(g-target)/Math.max(Math.abs(target),1e-9); fb.textContent=(q<.1?'¡Muy cerca! ':q<.5?'Tibio. ':'Lejos. ')+(g<target?'Sube.':'Baja.'); } };
+    document.getElementById('shoot').onclick=shoot;
+    document.getElementById('guess').addEventListener('keydown',e=>{ if(e.key==='Enter') shoot(); });
+    document.getElementById('giveup').onclick=()=>reveal(false);
+  }
+}
+
+const chalToggle=document.getElementById('chalToggle');
+chalToggle.checked=!!G.challenge;
+chalToggle.addEventListener('change',()=>{ G.challenge=chalToggle.checked; saveG(); toast(G.challenge?'Modo reto activado':'Modo reto desactivado'); animateNext=false; calc(); });
+
+window.addEventListener('load',()=>{
+  buildNav(); hud();
+  const h=location.hash.slice(1);
+  show(MODULES.some(m=>m.id===h)?h:MODULES[0].id);
+});
+</script>
+</body>
+</html>
